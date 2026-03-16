@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GameDevKit — 게임개발 툴 & SDK</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#090d0a;--bg2:#0c130e;--card:#0f1a14;--card2:#142019;--bdr:#1a3020;--bdr2:#254535;--txt:#d4f5dd;--mut:#4a7060;--sub:#7fba95;--gn:#00e676;--gn-d:#00b35a;--cy:#00bcd4;--am:#ffd600;--rd:#ff5252;--pu:#ce93d8;--grad:linear-gradient(135deg,#00e676,#00bcd4)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+.hidden{display:none!important}a{color:inherit;text-decoration:none}
+.mono{font-family:'JetBrains Mono',monospace}
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;height:62px;background:rgba(9,13,10,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--gn);box-shadow:0 0 20px rgba(0,230,118,.08);z-index:200;display:flex;align-items:center}
+.nav-inner{width:100%;max-width:1300px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;gap:1.2rem}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.nav-links{display:flex;align-items:center;gap:.25rem}
+.nl{font-size:.85rem;font-weight:500;padding:.38rem .75rem;color:var(--sub);cursor:pointer;border-radius:5px;background:transparent;border:none;transition:all .2s;white-space:nowrap}
+.nl:hover{background:var(--card);color:var(--txt)}
+.nav-right{display:flex;align-items:center;gap:.4rem;margin-left:auto;flex-shrink:0}
+.cart-wrap{position:relative;cursor:pointer}
+.cart-ico{font-size:1.1rem;padding:.35rem .6rem;border-radius:5px;background:transparent;border:none;color:var(--txt);cursor:pointer;transition:background .2s}
+.cart-ico:hover{background:var(--card)}
+.cart-badge{position:absolute;top:-2px;right:-2px;background:var(--gn);color:#000;font-size:.55rem;font-weight:800;min-width:16px;height:16px;padding:0 3px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace}
+.nav-av{width:34px;height:34px;border-radius:50%;background:var(--grad);color:#000;font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--gn);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+/* APP */
+#app{padding-top:62px;min-height:100vh}
+.view{display:none}.view.active{display:block}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.4rem;font-family:'Inter',sans-serif;font-size:.88rem;font-weight:600;padding:.65rem 1.3rem;cursor:pointer;border:none;border-radius:7px;transition:all .2s;letter-spacing:.01em}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-gn{background:var(--gn);color:#000;box-shadow:0 0 14px rgba(0,230,118,.25)}
+.btn-gn:hover:not(:disabled){background:#00ff8a;box-shadow:0 0 22px rgba(0,230,118,.4);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--gn);border:1.5px solid var(--gn)}
+.btn-outline:hover:not(:disabled){background:rgba(0,230,118,.08)}
+.btn-ghost{background:transparent;color:var(--sub);border:1.5px solid var(--bdr2)}
+.btn-ghost:hover:not(:disabled){border-color:var(--gn);color:var(--txt)}
+.btn-cy{background:var(--cy);color:#000}.btn-cy:hover:not(:disabled){background:#00d4ee;transform:translateY(-1px)}
+.btn-am{background:var(--am);color:#000}.btn-am:hover:not(:disabled){transform:translateY(-1px)}
+.btn-rd{background:transparent;color:var(--rd);border:1.5px solid var(--rd)}.btn-rd:hover:not(:disabled){background:rgba(255,82,82,.1)}
+.btn-sm{font-size:.78rem;padding:.4rem .85rem}.btn-lg{font-size:1rem;padding:.8rem 1.9rem}
+.btn-full{width:100%;justify-content:center}
+/* FORMS */
+.fg{display:flex;flex-direction:column;gap:.38rem;margin-bottom:.95rem}
+.fl{font-size:.75rem;font-weight:600;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.fi,.fta,.fse{background:var(--card2);border:1.5px solid var(--bdr);padding:.62rem .88rem;color:var(--txt);font-family:'Inter',sans-serif;font-size:.88rem;outline:none;border-radius:6px;width:100%;transition:border-color .2s}
+.fi:focus,.fta:focus,.fse:focus{border-color:var(--gn)}
+.fi::placeholder,.fta::placeholder{color:var(--mut)}.fta{min-height:90px;resize:vertical}.fse option{background:var(--card2)}.ferr{font-size:.76rem;color:var(--rd);margin-top:.2rem}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:.2rem;font-size:.7rem;font-weight:700;padding:.18rem .55rem;border-radius:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.03em}
+.b-free{background:rgba(0,230,118,.15);color:var(--gn);border:1px solid rgba(0,230,118,.3)}
+.b-paid{background:rgba(255,214,0,.15);color:var(--am);border:1px solid rgba(255,214,0,.3)}
+.b-sub{background:rgba(0,188,212,.15);color:var(--cy);border:1px solid rgba(0,188,212,.3)}
+.b-cat{font-size:.68rem;padding:.15rem .48rem;border-radius:3px}
+/* CODE BLOCKS */
+pre{background:#040a06;border:1px solid var(--bdr2);border-radius:7px;padding:1rem 1.2rem;overflow-x:auto;margin:.8rem 0}
+pre code{color:var(--gn);font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.75}
+.inline-code{background:#040a06;color:var(--gn);font-family:'JetBrains Mono',monospace;font-size:.82rem;padding:.1rem .4rem;border-radius:3px;border:1px solid var(--bdr2)}
+/* LAYOUT */
+.container{max-width:1300px;margin:0 auto;padding:0 2rem}
+/* HERO */
+.hero{padding:5.5rem 2rem 4.5rem;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--bdr)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(0,230,118,.1),transparent 70%),radial-gradient(ellipse 40% 40% at 80% 80%,rgba(0,188,212,.06),transparent 60%);pointer-events:none}
+.hero::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--gn);border:1px solid rgba(0,230,118,.3);background:rgba(0,230,118,.06);padding:.28rem .9rem;letter-spacing:.12em;margin-bottom:1.6rem;position:relative;z-index:1}
+.hero h1{font-family:'JetBrains Mono',monospace;font-size:clamp(1.8rem,5vw,3.2rem);font-weight:800;line-height:1.25;margin-bottom:.9rem;position:relative;z-index:1}
+.hero h1 .cursor::after{content:'_';animation:blink 1s step-end infinite;color:var(--gn)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.hero h1 span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:1rem;color:var(--sub);max-width:500px;margin:0 auto 2.2rem;position:relative;z-index:1}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem;position:relative;z-index:1}
+.stats-bar{display:flex;justify-content:center;gap:4rem;flex-wrap:wrap;padding:2.2rem 2rem;background:var(--card);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)}
+.stat-item{text-align:center}
+.stat-num{font-family:'JetBrains Mono',monospace;font-size:1.9rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:.8rem;color:var(--sub);margin-top:.2rem}
+/* SECTION */
+.sec{padding:3.5rem 0}
+.sec-alt{background:var(--bg2);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:.8rem}
+.sec-title{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--gn)}
+.sec-title::before{content:'// ';color:var(--mut)}
+.sec-sub{font-size:.85rem;color:var(--sub);margin-top:.25rem}
+/* CAT GRID */
+.cat-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.9rem}
+.cat-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .25s}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 0 20px rgba(0,230,118,.1);border-color:var(--gn)}
+.cat-icon{font-size:1.8rem;margin-bottom:.6rem}
+.cat-name{font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:600;margin-bottom:.3rem;line-height:1.4}
+.cat-count{font-size:.74rem;color:var(--sub)}
+/* TOOL GRID & CARD */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem}
+.tcard{background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;padding:1.3rem;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;gap:.65rem;position:relative;overflow:hidden}
+.tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cat-c,var(--gn));opacity:.7}
+.tcard:hover{border-color:var(--gn);box-shadow:0 0 22px rgba(0,230,118,.12);transform:translate(-2px,-3px)}
+.tcard-top{display:flex;align-items:center;justify-content:space-between}
+.tcard-title{font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:700;line-height:1.35}
+.tcard-author{font-size:.76rem;color:var(--sub)}.tcard-author span{color:var(--cy)}
+.tcard-desc{font-size:.83rem;color:var(--sub);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tcard-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem;margin-top:auto}
+.tcard-ver{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--mut);background:var(--card2);padding:.1rem .45rem;border-radius:3px;border:1px solid var(--bdr)}
+.tcard-dl{font-size:.72rem;color:var(--mut)}
+.eng-tags{display:flex;gap:.3rem;flex-wrap:wrap}
+.eng-tag{font-size:.65rem;font-weight:600;padding:.12rem .4rem;background:var(--card2);border:1px solid var(--bdr2);color:var(--mut);border-radius:3px;font-family:'JetBrains Mono',monospace}
+/* BROWSE LAYOUT */
+.browse-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 62px);align-items:start}
+.browse-sidebar{background:var(--bg2);border-right:1px solid var(--bdr);padding:1.6rem 1.2rem;position:sticky;top:62px;max-height:calc(100vh - 62px);overflow-y:auto}
+.browse-sidebar::-webkit-scrollbar{width:3px}.browse-sidebar::-webkit-scrollbar-thumb{background:var(--bdr2)}
+.sf-title{font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;color:var(--gn);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--bdr)}
+.sf-group{margin-bottom:1.8rem}
+.sf-btn{width:100%;text-align:left;background:transparent;border:none;color:var(--sub);font-size:.84rem;padding:.38rem .6rem;border-radius:5px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.5rem}
+.sf-btn:hover{background:var(--card);color:var(--txt)}
+.sf-btn.on{background:rgba(0,230,118,.12);color:var(--gn);font-weight:600}
+.sf-sel{width:100%;padding:.48rem .75rem;background:var(--card2);border:1.5px solid var(--bdr);color:var(--txt);font-family:'Inter',sans-serif;font-size:.84rem;border-radius:6px;outline:none;cursor:pointer}
+.sf-sel:focus{border-color:var(--gn)}.sf-sel option{background:var(--card2)}
+.browse-main{padding:1.8rem 2rem}
+.browse-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;gap:1rem;flex-wrap:wrap}
+.res-count{font-size:.84rem;color:var(--sub)}.res-count b{color:var(--txt)}
+.search-wrap{position:relative;flex:1;max-width:340px}
+.search-pre{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--gn);font-family:'JetBrains Mono',monospace;font-size:.85rem;pointer-events:none}
+.search-input{padding:.58rem .88rem .58rem 2.2rem;background:var(--card2);border:1.5px solid var(--bdr);color:var(--txt);font-family:'Inter',sans-serif;font-size:.88rem;outline:none;border-radius:6px;width:100%;transition:border-color .2s}
+.search-input:focus{border-color:var(--gn)}.search-input::placeholder{color:var(--mut)}
+/* DETAIL */
+.detail-wrap{max-width:1100px;margin:0 auto;padding:2rem 2rem}
+.bc{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--sub);margin-bottom:1.5rem;font-family:'JetBrains Mono',monospace}
+.bc a{cursor:pointer;transition:color .2s}.bc a:hover{color:var(--gn)}.bc span{color:var(--bdr2)}
+.detail-grid{display:grid;grid-template-columns:1fr 320px;gap:2rem;align-items:start}
+.d-tabs{display:flex;border-bottom:1.5px solid var(--bdr);margin-bottom:1.5rem}
+.d-tab{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:600;padding:.6rem 1.1rem;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:all .2s;background:transparent;border-top:none;border-left:none;border-right:none}
+.d-tab.on{color:var(--gn);border-bottom-color:var(--gn)}
+.d-content h4{font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--cy);margin:1.2rem 0 .5rem;letter-spacing:.05em}
+.d-content p{font-size:.88rem;color:var(--sub);line-height:1.75;margin-bottom:.7rem}
+.ver-table{width:100%;border-collapse:collapse}
+.ver-table th{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--sub);padding:.5rem .8rem;text-align:left;border-bottom:1px solid var(--bdr);letter-spacing:.05em;text-transform:uppercase}
+.ver-table td{font-size:.84rem;padding:.7rem .8rem;border-bottom:1px solid var(--bdr);color:var(--txt)}
+.ver-table tr:last-child td{border-bottom:none}
+.ver-table td:first-child{font-family:'JetBrains Mono',monospace;color:var(--gn)}
+/* PRICE CARD */
+.price-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:1.5rem;position:sticky;top:78px}
+.price-card:hover{border-color:rgba(0,230,118,.3)}
+.price-big{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:800;margin-bottom:1.3rem}
+.price-big.free{color:var(--gn)}.price-big.paid{color:var(--am)}.price-big.subscription{color:var(--cy)}
+.fi-table{background:var(--card2);border-radius:7px;padding:.85rem;margin:1.2rem 0;display:flex;flex-direction:column;gap:.5rem}
+.fi-row{display:flex;justify-content:space-between;font-size:.8rem}
+.fi-row span:first-child{color:var(--sub);font-family:'JetBrains Mono',monospace}.fi-row span:last-child{color:var(--txt);font-weight:500}
+.author-mini{display:flex;align-items:center;gap:.7rem;padding:.9rem;background:var(--card2);border-radius:7px;cursor:pointer;transition:background .2s;margin-top:1rem}
+.author-mini:hover{background:var(--bdr)}
+.auth-av{width:36px;height:36px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.85rem;color:#000;flex-shrink:0}
+.auth-name{font-size:.88rem;font-weight:600}.auth-role{font-size:.74rem;color:var(--sub)}
+/* DOCS VIEW */
+.docs-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 62px);align-items:start}
+.docs-sidebar{background:var(--bg2);border-right:1px solid var(--bdr);padding:1.4rem 1.2rem;position:sticky;top:62px;max-height:calc(100vh - 62px);overflow-y:auto}
+.docs-sidebar::-webkit-scrollbar{width:3px}.docs-sidebar::-webkit-scrollbar-thumb{background:var(--bdr2)}
+.docs-search{position:relative;margin-bottom:1.4rem}
+.docs-search input{width:100%;padding:.5rem .8rem .5rem 2rem;background:var(--card2);border:1.5px solid var(--bdr);color:var(--txt);font-size:.84rem;outline:none;border-radius:6px}
+.docs-search input:focus{border-color:var(--gn)}.docs-search input::placeholder{color:var(--mut)}
+.docs-search::before{content:'$';position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--gn);font-family:'JetBrains Mono',monospace;font-size:.8rem}
+.docs-cat-title{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--mut);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;margin-top:1.2rem;padding-bottom:.3rem;border-bottom:1px solid var(--bdr)}
+.docs-item{width:100%;text-align:left;background:transparent;border:none;color:var(--sub);font-size:.83rem;padding:.35rem .6rem;border-radius:4px;cursor:pointer;transition:all .2s;display:block}
+.docs-item:hover{background:var(--card);color:var(--txt)}
+.docs-item.on{background:rgba(0,230,118,.1);color:var(--gn);font-weight:600}
+.docs-main{padding:2rem 2.5rem;max-width:760px}
+.docs-main h2{font-family:'JetBrains Mono',monospace;font-size:1.2rem;color:var(--gn);margin-bottom:.3rem}
+.docs-main .docs-ver{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--sub);margin-bottom:1.5rem}
+.docs-main h4{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--cy);margin:1.4rem 0 .55rem;letter-spacing:.04em}
+.docs-main p{font-size:.88rem;color:var(--sub);line-height:1.8;margin-bottom:.7rem}
+/* LICENSE TABLE */
+.lic-wrap{max-width:900px;margin:0 auto;padding:2rem}
+.lic-table{width:100%;border-collapse:collapse}
+.lic-table th{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--sub);padding:.6rem 1rem;text-align:left;border-bottom:2px solid var(--bdr);letter-spacing:.06em;text-transform:uppercase}
+.lic-table td{font-size:.85rem;padding:.85rem 1rem;border-bottom:1px solid var(--bdr)}
+.lic-table tr:last-child td{border-bottom:none}
+.lic-table tr:hover td{background:rgba(0,230,118,.03)}
+.key-val{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--gn);cursor:pointer;transition:opacity .2s}
+.key-val:hover{opacity:.7}
+/* MY PAGE */
+.my-wrap{max-width:1000px;margin:0 auto;padding:2rem}
+.my-hdr{display:flex;align-items:center;gap:1.5rem;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:1.8rem;margin-bottom:2rem;flex-wrap:wrap}
+.my-av{width:68px;height:68px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:800;color:#000;flex-shrink:0;border:3px solid var(--gn)}
+.my-name{font-size:1.2rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+.my-email{font-size:.84rem;color:var(--sub);margin-top:.2rem}
+.my-stats{display:flex;gap:2rem;margin-top:.8rem;flex-wrap:wrap}
+.mst-n{font-size:1.2rem;font-weight:700;color:var(--gn);font-family:'JetBrains Mono',monospace}
+.mst-l{font-size:.74rem;color:var(--sub)}
+.my-tabs{display:flex;border-bottom:1.5px solid var(--bdr);margin-bottom:2rem}
+.my-tab{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:600;padding:.65rem 1.3rem;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:all .2s;background:transparent;border-top:none;border-left:none;border-right:none}
+.my-tab.on{color:var(--gn);border-bottom-color:var(--gn)}
+/* CART VIEW */
+.cart-wrap{max-width:900px;margin:0 auto;padding:2rem}
+.cart-layout{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start}
+.cart-item{background:var(--card);border:1.5px solid var(--bdr);border-radius:9px;padding:1rem;display:flex;align-items:center;gap:1rem;margin-bottom:.8rem}
+.cart-item-ico{width:52px;height:52px;border-radius:7px;background:var(--card2);border:1px solid var(--bdr2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-title{font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-item-type{font-size:.74rem;color:var(--sub);margin-top:.15rem}
+.cart-item-price{font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:700;flex-shrink:0}
+.order-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:1.5rem;position:sticky;top:78px}
+.order-title{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700;margin-bottom:1.2rem;color:var(--gn)}
+.order-row{display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:.55rem;color:var(--sub)}
+.order-total{display:flex;justify-content:space-between;font-size:1rem;font-weight:700;padding-top:.8rem;border-top:1px solid var(--bdr);margin-top:.4rem}
+.order-total span:last-child{color:var(--gn);font-family:'JetBrains Mono',monospace}
+/* AUTH */
+.auth-wrap{min-height:calc(100vh - 62px);display:flex;align-items:flex-start;justify-content:center;padding:3rem 2rem}
+.auth-box{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:2.4rem;width:100%;max-width:440px}
+.auth-title{font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:800;color:var(--gn);margin-bottom:.3rem}
+.auth-sub{font-size:.85rem;color:var(--sub);margin-bottom:1.8rem}
+.auth-note{font-size:.8rem;color:var(--sub);background:var(--card2);border:1px solid var(--bdr);padding:.6rem .85rem;border-radius:6px;margin-bottom:1.4rem;line-height:1.65;font-family:'JetBrains Mono',monospace}
+.auth-note code{color:var(--gn)}
+.auth-footer{text-align:center;margin-top:1.4rem;font-size:.84rem;color:var(--sub)}
+.auth-footer a{color:var(--gn);cursor:pointer}.auth-footer a:hover{text-decoration:underline}
+/* TOAST */
+#tc{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9000;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{background:var(--card);border:1.5px solid;padding:.62rem 1rem;border-radius:7px;font-size:.83rem;font-weight:500;max-width:280px;animation:tIn .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.4);font-family:'JetBrains Mono',monospace}
+.t-ok{border-color:var(--gn);color:var(--gn)}.t-err{border-color:var(--rd);color:var(--rd)}.t-info{border-color:var(--cy);color:var(--cy)}
+@keyframes tIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* EMPTY */
+.empty{text-align:center;padding:3.5rem 2rem;color:var(--sub)}.empty-ico{font-size:2.5rem;margin-bottom:.8rem}.empty p{font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.9}
+/* RESPONSIVE */
+@media(max-width:900px){.browse-layout{grid-template-columns:1fr}.browse-sidebar{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--bdr)}.detail-grid{grid-template-columns:1fr}.cart-layout{grid-template-columns:1fr}.cat-grid{grid-template-columns:repeat(4,1fr)}.docs-layout{grid-template-columns:1fr}.docs-sidebar{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--bdr)}}
+@media(max-width:600px){.cat-grid{grid-template-columns:repeat(3,1fr)}.tool-grid{grid-template-columns:1fr 1fr}.container{padding:0 1rem}.nav-links .nl{display:none}}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+<nav id="nav">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="go('home')">>&nbsp;_&nbsp;GameDevKit</div>
+    <div class="nav-links">
+      <button class="nl" onclick="go('tools')">툴 탐색</button>
+      <button class="nl" onclick="go('docs')">문서</button>
+    </div>
+    <div class="nav-right">
+      <div class="cart-wrap" onclick="go('cart')">
+        <button class="cart-ico">🛒</button>
+        <span class="cart-badge hidden" id="cart-badge">0</span>
+      </div>
+      <div id="nav-auth" style="display:flex;gap:.35rem">
+        <button class="nl" onclick="go('login')">로그인</button>
+        <button class="btn btn-gn btn-sm" onclick="go('register')">회원가입</button>
+      </div>
+      <div id="nav-av" class="nav-av hidden" onclick="go('mypage')"></div>
+    </div>
+  </div>
+</nav>
+<div id="app">
+<!-- HOME -->
+<div id="v-home" class="view">
+  <section class="hero">
+    <div class="hero-tag">&gt;_ GAME DEVELOPMENT TOOLKIT & SDK</div>
+    <h1 class="mono">게임 개발을<br/><span>더 빠르게</span><span class="cursor"></span></h1>
+    <p>검증된 툴과 SDK로 반복 작업은 줄이고<br/>창의적인 개발에만 집중하세요.</p>
+    <div class="hero-btns">
+      <button class="btn btn-gn btn-lg" onclick="go('tools')">툴 탐색하기</button>
+      <button class="btn btn-outline btn-lg" onclick="go('docs')">문서 보기</button>
+    </div>
+  </section>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num" id="st-tools">10</div><div class="stat-label">등록 툴</div></div>
+    <div class="stat-item"><div class="stat-num" id="st-dl">8.9K</div><div class="stat-label">총 다운로드</div></div>
+    <div class="stat-item"><div class="stat-num" id="st-free">5</div><div class="stat-label">무료 툴</div></div>
+    <div class="stat-item"><div class="stat-num" id="st-dev">3</div><div class="stat-label">크리에이터</div></div>
+  </div>
+  <section class="sec">
+    <div class="container">
+      <div class="sec-head"><div><div class="sec-title">카테고리</div><div class="sec-sub">원하는 유형의 툴을 빠르게 찾아보세요</div></div></div>
+      <div class="cat-grid" id="home-cats"></div>
+    </div>
+  </section>
+  <section class="sec sec-alt">
+    <div class="container">
+      <div class="sec-head"><div><div class="sec-title">인기 툴 TOP 6</div><div class="sec-sub">가장 많이 다운로드된 SDK입니다</div></div><button class="btn btn-ghost btn-sm" onclick="go('tools')">전체 보기 →</button></div>
+      <div class="tool-grid" id="home-popular"></div>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="container">
+      <div class="sec-head"><div><div class="sec-title">최신 업데이트</div><div class="sec-sub">새롭게 업데이트된 툴입니다</div></div></div>
+      <div class="tool-grid" id="home-new"></div>
+    </div>
+  </section>
+</div>
+<!-- TOOLS -->
+<div id="v-tools" class="view">
+  <div class="browse-layout">
+    <div class="browse-sidebar">
+      <div class="sf-group">
+        <div class="sf-title">카테고리</div>
+        <button class="sf-btn on" data-cat="all" onclick="setCat('all')">🌟 전체</button>
+        <button class="sf-btn" data-cat="render" onclick="setCat('render')">🖥️ 렌더링/그래픽</button>
+        <button class="sf-btn" data-cat="physics" onclick="setCat('physics')">⚙️ 물리 엔진</button>
+        <button class="sf-btn" data-cat="ai" onclick="setCat('ai')">🧠 AI/네비게이션</button>
+        <button class="sf-btn" data-cat="audio" onclick="setCat('audio')">🔊 오디오</button>
+        <button class="sf-btn" data-cat="network" onclick="setCat('network')">🌐 네트워킹</button>
+        <button class="sf-btn" data-cat="ui" onclick="setCat('ui')">🖼️ UI 프레임워크</button>
+        <button class="sf-btn" data-cat="util" onclick="setCat('util')">🔧 유틸리티</button>
+      </div>
+      <div class="sf-group">
+        <div class="sf-title">라이선스</div>
+        <button class="sf-btn on" data-lic="all" onclick="setLic('all')">전체</button>
+        <button class="sf-btn" data-lic="free" onclick="setLic('free')">무료</button>
+        <button class="sf-btn" data-lic="paid" onclick="setLic('paid')">유료</button>
+        <button class="sf-btn" data-lic="subscription" onclick="setLic('subscription')">구독</button>
+      </div>
+      <div class="sf-group">
+        <div class="sf-title">엔진</div>
+        <button class="sf-btn on" data-eng="all" onclick="setEng('all')">전체</button>
+        <button class="sf-btn" data-eng="Unity" onclick="setEng('Unity')">Unity</button>
+        <button class="sf-btn" data-eng="Godot" onclick="setEng('Godot')">Godot</button>
+        <button class="sf-btn" data-eng="Unreal" onclick="setEng('Unreal')">Unreal</button>
+        <button class="sf-btn" data-eng="GameMaker" onclick="setEng('GameMaker')">GameMaker</button>
+        <button class="sf-btn" data-eng="범용" onclick="setEng('범용')">범용</button>
+      </div>
+      <div class="sf-group">
+        <div class="sf-title">정렬</div>
+        <select class="sf-sel" id="sort-sel" onchange="setSort(this.value)">
+          <option value="popular">인기순</option>
+          <option value="newest">최신순</option>
+          <option value="downloads">다운로드순</option>
+          <option value="name">이름순</option>
+        </select>
+      </div>
+    </div>
+    <div class="browse-main">
+      <div class="browse-top">
+        <div class="res-count" id="res-count"><b>0</b>개의 툴</div>
+        <div class="search-wrap"><div class="search-pre">$</div><input id="tool-search" class="search-input" type="text" placeholder="툴 검색..." oninput="setSearch(this.value)"/></div>
+      </div>
+      <div class="tool-grid" id="tools-grid"></div>
+    </div>
+  </div>
+</div>
+<!-- DETAIL -->
+<div id="v-detail" class="view">
+  <div class="detail-wrap">
+    <div class="bc" id="detail-bc"></div>
+    <div class="detail-grid">
+      <div id="detail-left"></div>
+      <div id="detail-right"></div>
+    </div>
+  </div>
+</div>
+<!-- DOCS -->
+<div id="v-docs" class="view">
+  <div class="docs-layout">
+    <div class="docs-sidebar">
+      <div class="docs-search"><input type="text" placeholder="문서 검색..." oninput="filterDocs(this.value)"/></div>
+      <div id="docs-sidebar-content"></div>
+    </div>
+    <div class="docs-main" id="docs-main">
+      <div class="empty"><div class="empty-ico">📖</div><p>왼쪽 목록에서<br/>툴을 선택하세요</p></div>
+    </div>
+  </div>
+</div>
+<!-- LICENSE -->
+<div id="v-license" class="view">
+  <div class="lic-wrap">
+    <div style="margin-bottom:2rem"><div class="sec-title">라이선스 키</div><div class="sec-sub" style="margin-top:.3rem">구매한 툴의 라이선스 키를 관리하세요</div></div>
+    <div id="lic-content"></div>
+  </div>
+</div>
+<!-- MYPAGE -->
+<div id="v-mypage" class="view">
+  <div class="my-wrap">
+    <div class="my-hdr" id="my-hdr"></div>
+    <div class="my-tabs">
+      <button class="my-tab on" id="mt-dl" onclick="setMyTab('downloads')">내 다운로드</button>
+      <button class="my-tab" id="mt-lk" onclick="setMyTab('licenses')">라이선스 키</button>
+      <button class="my-tab" id="mt-up" onclick="setMyTab('uploads')">등록한 툴</button>
+    </div>
+    <div id="my-content"></div>
+  </div>
+</div>
+<!-- CART -->
+<div id="v-cart" class="view">
+  <div class="cart-wrap">
+    <div style="margin-bottom:2rem"><div class="sec-title">장바구니</div></div>
+    <div id="cart-content"></div>
+  </div>
+</div>
+<!-- LOGIN -->
+<div id="v-login" class="view"><div class="auth-wrap"><div class="auth-box">
+  <div class="auth-title">&gt;_ LOGIN</div>
+  <div class="auth-sub">GameDevKit 계정으로 로그인</div>
+  <div class="auth-note">테스트 계정: <code>kim@demo.com</code> / <code>demo123</code></div>
+  <div class="fg"><label class="fl">이메일</label><input id="li-e" class="fi" type="email" placeholder="email@example.com"/></div>
+  <div class="fg"><label class="fl">비밀번호</label><input id="li-p" class="fi" type="password" placeholder="••••••••"/><span id="li-err" class="ferr hidden"></span></div>
+  <button class="btn btn-gn btn-full" onclick="doLogin()">&gt; 로그인</button>
+  <div class="auth-footer">계정이 없으신가요? <a onclick="go('register')">회원가입</a></div>
+</div></div></div>
+<!-- REGISTER -->
+<div id="v-register" class="view"><div class="auth-wrap"><div class="auth-box">
+  <div class="auth-title">&gt;_ REGISTER</div>
+  <div class="auth-sub">무료로 시작하세요</div>
+  <div class="fg"><label class="fl">닉네임</label><input id="rg-n" class="fi" type="text" placeholder="개발자 닉네임" maxlength="20"/></div>
+  <div class="fg"><label class="fl">이메일</label><input id="rg-e" class="fi" type="email" placeholder="email@example.com"/></div>
+  <div class="fg"><label class="fl">비밀번호 (6자 이상)</label><input id="rg-p" class="fi" type="password" placeholder="••••••••"/></div>
+  <span id="rg-err" class="ferr hidden" style="display:block;margin-bottom:.8rem"></span>
+  <button class="btn btn-gn btn-full" onclick="doRegister()">&gt; 회원가입</button>
+  <div class="auth-footer">이미 계정이 있으신가요? <a onclick="go('login')">로그인</a></div>
+</div></div></div>
+</div><!-- #app -->
+<script>
+const CATS={render:{label:'렌더링/그래픽',icon:'🖥️',color:'#ce93d8'},physics:{label:'물리 엔진',icon:'⚙️',color:'#00e676'},ai:{label:'AI/네비게이션',icon:'🧠',color:'#00bcd4'},audio:{label:'오디오',icon:'🔊',color:'#ffd600'},network:{label:'네트워킹',icon:'🌐',color:'#ff8a65'},ui:{label:'UI 프레임워크',icon:'🖼️',color:'#f48fb1'},util:{label:'유틸리티',icon:'🔧',color:'#80cbc4'}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const genKey=()=>'GDEV-'+Array(3).fill(0).map(()=>Math.random().toString(36).slice(2,6).toUpperCase()).join('-');
+const fmt=n=>n===0?'무료':`₩${n.toLocaleString()}`;
+const fmtSub=n=>`₩${n.toLocaleString()}/월`;
+const ago=s=>{const d=(Date.now()-new Date(s))/1000;if(d<60)return '방금 전';if(d<3600)return `${~~(d/60)}분 전`;if(d<86400)return `${~~(d/3600)}시간 전`;return `${~~(d/86400)}일 전`;};
+const init=n=>n?n[0].toUpperCase():'?';
+
+const DB={
+  users:()=>JSON.parse(localStorage.getItem('ia_gdk_u')||'[]'),saveU:v=>localStorage.setItem('ia_gdk_u',JSON.stringify(v)),
+  sid:()=>localStorage.getItem('ia_gdk_s'),setSid:id=>localStorage.setItem('ia_gdk_s',id),clearSid:()=>localStorage.removeItem('ia_gdk_s'),
+  me:()=>{const id=DB.sid();return id?DB.users().find(u=>u.id===id)||null:null;},
+  tools:()=>JSON.parse(localStorage.getItem('ia_gdk_t')||'[]'),saveT:v=>localStorage.setItem('ia_gdk_t',JSON.stringify(v)),
+  lics:()=>JSON.parse(localStorage.getItem('ia_gdk_lic')||'[]'),saveLics:v=>localStorage.setItem('ia_gdk_lic',JSON.stringify(v)),
+  dls:()=>JSON.parse(localStorage.getItem('ia_gdk_dl')||'[]'),saveDls:v=>localStorage.setItem('ia_gdk_dl',JSON.stringify(v)),
+  cart:()=>{const me=DB.me();return me?JSON.parse(localStorage.getItem('ia_gdk_cart_'+me.id)||'[]'):[];},
+  saveCart:v=>{const me=DB.me();if(me)localStorage.setItem('ia_gdk_cart_'+me.id,JSON.stringify(v));},
+  hasLic:(uid2,tid)=>DB.lics().some(l=>l.userId===uid2&&l.toolId===tid),
+  hasDl:(uid2,tid)=>DB.dls().some(d=>d.userId===uid2&&d.toolId===tid),
+};
+const ST={cat:'all',lic:'all',eng:'all',sort:'popular',search:'',viewTool:null,myTab:'downloads',docsId:null,detailTab:'overview',selVer:null};
+
+function toast(msg,type='info'){const el=document.createElement('div');el.className=`toast t-${type}`;el.textContent=msg;document.getElementById('tc').appendChild(el);setTimeout(()=>el.remove(),3000);}
+
+function updateNav(){
+  const me=DB.me();
+  document.getElementById('nav-auth').style.display=me?'none':'flex';
+  const av=document.getElementById('nav-av');av.classList.toggle('hidden',!me);
+  if(me)av.textContent=init(me.username);
+  const c=DB.cart();const cb=document.getElementById('cart-badge');
+  cb.textContent=c.length;cb.classList.toggle('hidden',c.length===0);
+}
+
+function go(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  const el=document.getElementById('v-'+v);if(el)el.classList.add('active');
+  updateNav();
+  if(v==='home')renderHome();
+  if(v==='tools')renderTools();
+  if(v==='detail'&&ST.viewTool)renderDetail(ST.viewTool);
+  if(v==='docs')renderDocs();
+  if(v==='license'){if(!DB.me()){go('login');return;}renderLicense();}
+  if(v==='mypage'){if(!DB.me()){go('login');return;}renderMypage();}
+  if(v==='cart')renderCart();
+  window.scrollTo(0,0);
+}
+function openTool(id){ST.viewTool=id;ST.detailTab='overview';go('detail');}
+
+/* ---- TOOL CARD ---- */
+function toolCard(t){
+  const cat=CATS[t.category]||CATS.util;
+  const lb=t.license==='free'?'<span class="badge b-free">무료</span>':t.license==='subscription'?'<span class="badge b-sub">구독</span>':'<span class="badge b-paid">유료</span>';
+  const engs=(t.engines||[]).slice(0,3).map(e=>`<span class="eng-tag">${e}</span>`).join('');
+  return `<div class="tcard" style="--cat-c:${cat.color}" onclick="openTool('${t.id}')">
+    <div class="tcard-top"><span class="badge b-cat" style="background:${cat.color}22;color:${cat.color};border:1px solid ${cat.color}44">${cat.icon} ${cat.label}</span>${lb}</div>
+    <div class="tcard-title">${t.title}</div>
+    <div class="tcard-author">by <span>${t.authorName||'개발자'}</span></div>
+    <div class="tcard-desc">${t.desc||''}</div>
+    <div class="eng-tags">${engs}</div>
+    <div class="tcard-footer"><span class="tcard-ver">v${t.latestVersion}</span><span class="tcard-dl">↓ ${(t.downloads||0).toLocaleString()}</span></div>
+  </div>`;
+}
+
+/* ---- HOME ---- */
+function renderHome(){
+  const tools=DB.tools();
+  const cg=document.getElementById('home-cats');
+  if(cg)cg.innerHTML=Object.entries(CATS).map(([k,v])=>{
+    const cnt=tools.filter(t=>t.category===k).length;
+    return `<div class="cat-card" onclick="setCat('${k}');go('tools')"><div class="cat-icon">${v.icon}</div><div class="cat-name">${v.label}</div><div class="cat-count">${cnt}개 툴</div></div>`;
+  }).join('');
+  const pop=[...tools].sort((a,b)=>(b.downloads||0)-(a.downloads||0)).slice(0,6);
+  const pp=document.getElementById('home-popular');if(pp)pp.innerHTML=pop.map(toolCard).join('');
+  const nw=[...tools].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,4);
+  const np=document.getElementById('home-new');if(np)np.innerHTML=nw.map(toolCard).join('');
+  // stats
+  const free=tools.filter(t=>t.license==='free').length;
+  const totalDl=tools.reduce((s,t)=>s+(t.downloads||0),0);
+  const el=document.getElementById('st-tools');if(el)el.textContent=tools.length;
+  const el2=document.getElementById('st-dl');if(el2)el2.textContent=totalDl>=1000?(totalDl/1000).toFixed(1)+'K':totalDl;
+  const el3=document.getElementById('st-free');if(el3)el3.textContent=free;
+  const el4=document.getElementById('st-dev');if(el4)el4.textContent=new Set(tools.map(t=>t.authorId)).size;
+}
+
+/* ---- BROWSE ---- */
+function setCat(c){ST.cat=c;document.querySelectorAll('[data-cat]').forEach(e=>e.classList.toggle('on',e.dataset.cat===c));renderTools();}
+function setLic(l){ST.lic=l;document.querySelectorAll('[data-lic]').forEach(e=>e.classList.toggle('on',e.dataset.lic===l));renderTools();}
+function setEng(e){ST.eng=e;document.querySelectorAll('[data-eng]').forEach(el=>el.classList.toggle('on',el.dataset.eng===e));renderTools();}
+function setSort(s){ST.sort=s;renderTools();}
+function setSearch(v){ST.search=v.toLowerCase();renderTools();}
+function renderTools(){
+  let list=DB.tools();
+  if(ST.cat!=='all')list=list.filter(t=>t.category===ST.cat);
+  if(ST.lic!=='all')list=list.filter(t=>t.license===ST.lic);
+  if(ST.eng!=='all')list=list.filter(t=>(t.engines||[]).includes(ST.eng));
+  if(ST.search)list=list.filter(t=>t.title.toLowerCase().includes(ST.search)||(t.tags||[]).some(g=>g.toLowerCase().includes(ST.search)));
+  if(ST.sort==='popular')list.sort((a,b)=>(b.downloads||0)-(a.downloads||0));
+  else if(ST.sort==='newest')list.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  else if(ST.sort==='downloads')list.sort((a,b)=>(b.downloads||0)-(a.downloads||0));
+  else list.sort((a,b)=>a.title.localeCompare(b.title));
+  const rc=document.getElementById('res-count');if(rc)rc.innerHTML=`<b>${list.length}</b>개의 툴`;
+  const grid=document.getElementById('tools-grid');
+  if(grid)grid.innerHTML=list.length?list.map(toolCard).join(''):`<div class="empty" style="grid-column:1/-1"><div class="empty-ico">🔍</div><p>검색 결과가 없습니다.</p></div>`;
+}
+
+/* ---- DETAIL ---- */
+function renderDetail(id){
+  const t=DB.tools().find(x=>x.id===id);if(!t){go('tools');return;}
+  const me=DB.me();const cat=CATS[t.category]||CATS.util;
+  const author=DB.users().find(u=>u.id===t.authorId);
+  const hasLic=me&&DB.hasLic(me.id,t.id);
+  const inCart=DB.cart().includes(t.id);
+  const bc=document.getElementById('detail-bc');
+  if(bc)bc.innerHTML=`<a onclick="go('home')">홈</a><span>/</span><a onclick="setCat('${t.category}');go('tools')">${cat.label}</a><span>/</span><span style="color:var(--txt)">${t.title}</span>`;
+  const left=document.getElementById('detail-left');
+  if(left){
+    const tags=(t.tags||[]).map(g=>`<span class="eng-tag" style="font-size:.73rem;padding:.2rem .55rem">${g}</span>`).join('');
+    const engs=(t.engines||[]).map(e=>`<span class="eng-tag">${e}</span>`).join('');
+    const verRows=(t.versions||[]).map(v=>`<tr><td>v${v.ver}</td><td>${v.date}</td><td>${v.size}</td><td style="color:var(--sub);font-size:.82rem">${v.notes}</td><td><button class="btn btn-ghost btn-sm" onclick="doDownload('${t.id}','${v.ver}')">↓ 받기</button></td></tr>`).join('');
+    left.innerHTML=`<div style="margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.8rem">
+        <span class="badge b-cat" style="background:${cat.color}22;color:${cat.color};border:1px solid ${cat.color}44;font-size:.75rem">${cat.icon} ${cat.label}</span>
+        ${t.license==='free'?'<span class="badge b-free">무료</span>':t.license==='subscription'?'<span class="badge b-sub">구독</span>':'<span class="badge b-paid">유료</span>'}
+      </div>
+      <h1 style="font-family:\'JetBrains Mono\',monospace;font-size:1.5rem;font-weight:800;margin-bottom:.5rem">${t.title}</h1>
+      <div style="font-size:.84rem;color:var(--sub)">by <span style="color:var(--cy);cursor:pointer" onclick="">${t.authorName||'개발자'}</span> &nbsp;·&nbsp; v${t.latestVersion} &nbsp;·&nbsp; ↓ ${(t.downloads||0).toLocaleString()}회</div>
+    </div>
+    <div class="d-tabs">
+      <button class="d-tab on" id="dt-ov" onclick="setDTab('overview')">개요</button>
+      <button class="d-tab" id="dt-dc" onclick="setDTab('docs')">문서</button>
+      <button class="d-tab" id="dt-vh" onclick="setDTab('versions')">버전 히스토리</button>
+    </div>
+    <div id="dt-content">
+      <div class="d-content">
+        <p>${t.desc||''}</p>
+        <h4>// 지원 엔진</h4><div style="display:flex;gap:.4rem;flex-wrap:wrap">${engs||'<span style="color:var(--mut)">정보 없음</span>'}</div>
+        ${tags?`<h4>// 태그</h4><div style="display:flex;gap:.4rem;flex-wrap:wrap">${tags}</div>`:''}
+      </div>
+    </div>`;
+  }
+  const right=document.getElementById('detail-right');
+  if(right){
+    const priceDisp=t.license==='free'?'무료':t.license==='subscription'?fmtSub(t.price):fmt(t.price);
+    const priceClass=t.license==='free'?'free':t.license==='subscription'?'subscription':'paid';
+    let actionBtn='';
+    if(!me)actionBtn=`<button class="btn btn-gn btn-full" onclick="go('login')">로그인 후 이용</button>`;
+    else if(t.license==='free')actionBtn=`<button class="btn btn-gn btn-full" onclick="doDownload('${t.id}','${t.latestVersion}')">↓ 무료 다운로드</button>`;
+    else if(hasLic)actionBtn=`<button class="btn btn-gn btn-full" onclick="doDownload('${t.id}','${t.latestVersion}')">↓ 다운로드</button><button class="btn btn-outline btn-full" style="margin-top:.5rem" onclick="go('license')">🔑 키 확인</button>`;
+    else if(inCart)actionBtn=`<button class="btn btn-cy btn-full" onclick="go('cart')">장바구니에서 보기 →</button>`;
+    else actionBtn=`<button class="btn btn-am btn-full" onclick="addCart('${t.id}')">구매하기 — ${priceDisp}</button>`;
+    const verOpts=(t.versions||[]).map(v=>`<option value="${v.ver}">v${v.ver}</option>`).join('');
+    const authorHtml=author?`<div class="author-mini" onclick="go('mypage')"><div class="auth-av">${init(author.username)}</div><div><div class="auth-name">${author.username}</div><div class="auth-role">SDK 개발자</div></div></div>`:'';
+    right.innerHTML=`<div class="price-card">
+      <div class="price-big ${priceClass}">${priceDisp}</div>
+      ${verOpts?`<div class="fg" style="margin-bottom:1rem"><label class="fl">버전 선택</label><select class="fse" id="ver-sel" style="font-family:\'JetBrains Mono\',monospace">${verOpts}</select></div>`:''}
+      ${actionBtn}
+      <div class="fi-table">
+        <div class="fi-row"><span>최신 버전</span><span>v${t.latestVersion}</span></div>
+        ${t.versions?.length?`<div class="fi-row"><span>버전 수</span><span>${t.versions.length}개</span></div>`:''}
+        ${t.engines?.length?`<div class="fi-row"><span>엔진</span><span>${t.engines.join(', ')}</span></div>`:''}
+        <div class="fi-row"><span>다운로드</span><span>${(t.downloads||0).toLocaleString()}회</span></div>
+        <div class="fi-row"><span>등록일</span><span>${new Date(t.createdAt).toLocaleDateString('ko-KR')}</span></div>
+      </div>
+      ${authorHtml}
+    </div>`;
+  }
+}
+function setDTab(tab){
+  ST.detailTab=tab;
+  ['ov','dc','vh'].forEach(k=>{const el=document.getElementById('dt-'+k);if(el)el.classList.remove('on');});
+  const map={overview:'dt-ov',docs:'dt-dc',versions:'dt-vh'};
+  const active=document.getElementById(map[tab]);if(active)active.classList.add('on');
+  const t=DB.tools().find(x=>x.id===ST.viewTool);if(!t)return;
+  const ct=document.getElementById('dt-content');if(!ct)return;
+  if(tab==='overview'){
+    const tags=(t.tags||[]).map(g=>`<span class="eng-tag" style="font-size:.73rem;padding:.2rem .55rem">${g}</span>`).join('');
+    const engs=(t.engines||[]).map(e=>`<span class="eng-tag">${e}</span>`).join('');
+    ct.innerHTML=`<div class="d-content"><p>${t.desc||''}</p><h4>// 지원 엔진</h4><div style="display:flex;gap:.4rem;flex-wrap:wrap">${engs||'<span style="color:var(--mut)">정보 없음</span>'}</div>${tags?`<h4>// 태그</h4><div style="display:flex;gap:.4rem;flex-wrap:wrap">${tags}</div>`:''}</div>`;
+  } else if(tab==='docs'){
+    ct.innerHTML=`<div class="docs-main" style="padding:0;max-width:none">${t.docs||'<p style="color:var(--sub)">문서가 없습니다.</p>'}</div>`;
+  } else {
+    const rows=(t.versions||[]).map(v=>`<tr><td>v${v.ver}</td><td>${v.date}</td><td>${v.size}</td><td style="color:var(--sub);font-size:.82rem">${v.notes}</td><td><button class="btn btn-ghost btn-sm" onclick="doDownload('${t.id}','${v.ver}')">↓</button></td></tr>`).join('');
+    ct.innerHTML=`<table class="ver-table"><thead><tr><th>버전</th><th>날짜</th><th>크기</th><th>변경사항</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+}
+
+/* ---- DOCS ---- */
+function renderDocs(){
+  const tools=DB.tools();
+  const grouped={};
+  tools.forEach(t=>{if(!grouped[t.category])grouped[t.category]=[];grouped[t.category].push(t);});
+  const sb=document.getElementById('docs-sidebar-content');
+  if(sb)sb.innerHTML=Object.entries(grouped).map(([cat,ts])=>{
+    const c=CATS[cat]||CATS.util;
+    return `<div class="docs-cat-title">${c.icon} ${c.label}</div>${ts.map(t=>`<button class="docs-item${ST.docsId===t.id?' on':''}" onclick="openDoc('${t.id}')">${t.title}</button>`).join('')}`;
+  }).join('');
+  if(ST.docsId)openDoc(ST.docsId,false);
+}
+function openDoc(id, updateSidebar=true){
+  ST.docsId=id;
+  const t=DB.tools().find(x=>x.id===id);if(!t)return;
+  const dm=document.getElementById('docs-main');
+  if(dm)dm.innerHTML=`<h2>${t.title}</h2><div class="docs-ver">v${t.latestVersion} &nbsp;·&nbsp; ${CATS[t.category]?.label}</div><div class="divider" style="height:1px;background:var(--bdr);margin:1rem 0"></div>${t.docs||'<p style="color:var(--sub)">문서가 없습니다.</p>'}`;
+  if(updateSidebar){document.querySelectorAll('.docs-item').forEach(el=>el.classList.toggle('on',el.textContent===t.title));}
+}
+function filterDocs(v){
+  const q=v.toLowerCase();
+  document.querySelectorAll('.docs-item').forEach(el=>{el.style.display=!q||el.textContent.toLowerCase().includes(q)?'block':'none';});
+}
+
+/* ---- DOWNLOAD ---- */
+function doDownload(toolId,version){
+  const me=DB.me();
+  const t=DB.tools().find(x=>x.id===toolId);if(!t)return;
+  if(!me){go('login');return;}
+  if(t.license!=='free'&&!DB.hasLic(me.id,toolId)){toast('라이선스가 필요합니다.','err');return;}
+  const dls=DB.dls();dls.push({id:uid(),userId:me.id,toolId,version:version||t.latestVersion,at:new Date().toISOString()});DB.saveDls(dls);
+  const ts=DB.tools();const i=ts.findIndex(x=>x.id===toolId);if(i!==-1){ts[i].downloads=(ts[i].downloads||0)+1;DB.saveT(ts);}
+  toast(`${t.title} v${version} 다운로드 완료!`,'ok');
+}
+
+/* ---- CART & CHECKOUT ---- */
+function addCart(id){
+  if(!DB.me()){go('login');return;}
+  const t=DB.tools().find(x=>x.id===id);if(!t)return;
+  if(t.license==='free'){doDownload(id,t.latestVersion);return;}
+  if(DB.hasLic(DB.me().id,id)){toast('이미 보유한 툴입니다.','info');return;}
+  const cart=DB.cart();if(!cart.includes(id)){cart.push(id);DB.saveCart(cart);}
+  updateNav();toast('장바구니에 담았습니다!','ok');
+}
+function removeCart(id){const cart=DB.cart().filter(c=>c!==id);DB.saveCart(cart);updateNav();renderCart();}
+function checkout(){
+  const me=DB.me();if(!me)return;
+  const cart=DB.cart();const tools=DB.tools();const lics=DB.lics();
+  cart.forEach(id=>{
+    if(!DB.hasLic(me.id,id)){
+      lics.push({id:uid(),userId:me.id,toolId:id,key:genKey(),issuedAt:new Date().toISOString(),expiresAt:null});
+    }
+  });
+  DB.saveLics(lics);DB.saveCart([]);updateNav();
+  toast('결제 완료! 라이선스 키가 발급되었습니다. 🎉','ok');go('mypage');setMyTab('licenses');
+}
+function renderCart(){
+  const me=DB.me();const cart=DB.cart();const tools=DB.tools();const cc=document.getElementById('cart-content');
+  if(!me){cc.innerHTML=`<div class="empty"><div class="empty-ico">🔒</div><p>로그인이 필요합니다.</p></div>`;return;}
+  if(!cart.length){cc.innerHTML=`<div class="empty"><div class="empty-ico">🛒</div><p>장바구니가 비어 있어요.</p></div>`;return;}
+  const items=cart.map(id=>tools.find(t=>t.id===id)).filter(Boolean);
+  const total=items.reduce((s,t)=>s+(t.price||0),0);
+  cc.innerHTML=`<div class="cart-layout">
+    <div>${items.map(t=>{const cat=CATS[t.category]||CATS.util;return `<div class="cart-item">
+      <div class="cart-item-ico" style="background:${cat.color}22">${cat.icon}</div>
+      <div class="cart-item-info"><div class="cart-item-title">${t.title}</div><div class="cart-item-type">${t.license==='subscription'?fmtSub(t.price):fmt(t.price)} &nbsp;·&nbsp; ${cat.label}</div></div>
+      <div class="cart-item-price" style="color:var(--am)">${t.license==='subscription'?fmtSub(t.price):fmt(t.price)}</div>
+      <button class="btn btn-rd btn-sm" onclick="removeCart('${t.id}')">×</button>
+    </div>`;}).join('')}</div>
+    <div class="order-card">
+      <div class="order-title">// 주문 요약</div>
+      ${items.map(t=>`<div class="order-row"><span>${t.title.slice(0,18)}${t.title.length>18?'...':''}</span><span>${fmt(t.price)}</span></div>`).join('')}
+      <div class="order-total"><span>총 결제금액</span><span>${fmt(total)}</span></div>
+      <button class="btn btn-gn btn-full" style="margin-top:1.2rem" onclick="checkout()">&gt; 결제하기</button>
+    </div>
+  </div>`;
+}
+
+/* ---- LICENSE ---- */
+function renderLicense(){
+  const me=DB.me();if(!me)return;
+  const lics=DB.lics().filter(l=>l.userId===me.id);const tools=DB.tools();
+  const lc=document.getElementById('lic-content');
+  if(!lc)return;
+  if(!lics.length){lc.innerHTML=`<div class="empty"><div class="empty-ico">🔑</div><p>보유한 라이선스 키가 없습니다.</p></div>`;return;}
+  lc.innerHTML=`<table class="lic-table"><thead><tr><th>툴</th><th>라이선스 키</th><th>발급일</th><th>만료일</th><th></th></tr></thead><tbody>${lics.map(l=>{const t=tools.find(x=>x.id===l.toolId);return `<tr><td><b>${t?t.title:'알 수 없음'}</b></td><td><span class="key-val" data-key="${l.key}" onclick="copyKey('${l.key}')" title="클릭하여 복사">${l.key.slice(0,7)}****</span></td><td style="color:var(--sub)">${new Date(l.issuedAt).toLocaleDateString('ko-KR')}</td><td style="color:var(--sub)">${l.expiresAt||'무기한'}</td><td><button class="btn btn-ghost btn-sm" onclick="copyKey('${l.key}')">복사</button></td></tr>`;}).join('')}</tbody></table>`;
+}
+function copyKey(key){navigator.clipboard?.writeText(key).then(()=>toast('라이선스 키 복사됨!','ok')).catch(()=>{toast(`키: ${key}`,'info');});}
+
+/* ---- MYPAGE ---- */
+function setMyTab(tab){
+  ST.myTab=tab;
+  ['dl','lk','up'].forEach(k=>{const el=document.getElementById('mt-'+k);if(el)el.classList.remove('on');});
+  const map={downloads:'mt-dl',licenses:'mt-lk',uploads:'mt-up'};
+  const active=document.getElementById(map[tab]);if(active)active.classList.add('on');
+  renderMyContent();
+}
+function renderMypage(){
+  const me=DB.me();if(!me)return;
+  const myDls=DB.dls().filter(d=>d.userId===me.id);
+  const myLics=DB.lics().filter(l=>l.userId===me.id);
+  const myTools=DB.tools().filter(t=>t.authorId===me.id);
+  const hdr=document.getElementById('my-hdr');
+  if(hdr)hdr.innerHTML=`<div class="my-av">${init(me.username)}</div>
+    <div>
+      <div class="my-name">${me.username}</div><div class="my-email">${me.email}</div>
+      <div class="my-stats">
+        <div><div class="mst-n">${myDls.length}</div><div class="mst-l">다운로드</div></div>
+        <div><div class="mst-n">${myLics.length}</div><div class="mst-l">라이선스</div></div>
+        <div><div class="mst-n">${myTools.length}</div><div class="mst-l">등록 툴</div></div>
+      </div>
+    </div>
+    <button class="btn btn-rd btn-sm" onclick="doLogout()" style="margin-left:auto">로그아웃</button>`;
+  renderMyContent();
+}
+function renderMyContent(){
+  const me=DB.me();if(!me)return;
+  const mc=document.getElementById('my-content');if(!mc)return;
+  const tools=DB.tools();
+  if(ST.myTab==='downloads'){
+    const dlIds=[...new Set(DB.dls().filter(d=>d.userId===me.id).map(d=>d.toolId))];
+    const items=dlIds.map(id=>tools.find(t=>t.id===id)).filter(Boolean);
+    mc.innerHTML=items.length?`<div class="tool-grid">${items.map(toolCard).join('')}</div>`:`<div class="empty"><div class="empty-ico">📭</div><p>다운로드한 툴이 없습니다.</p></div>`;
+  } else if(ST.myTab==='licenses'){
+    const lics=DB.lics().filter(l=>l.userId===me.id);
+    if(!lics.length){mc.innerHTML=`<div class="empty"><div class="empty-ico">🔑</div><p>보유한 라이선스 키가 없습니다.</p></div>`;return;}
+    mc.innerHTML=`<table class="lic-table"><thead><tr><th>툴</th><th>라이선스 키</th><th>발급일</th><th>만료일</th><th></th></tr></thead><tbody>${lics.map(l=>{const t=tools.find(x=>x.id===l.toolId);return `<tr><td><b>${t?t.title:'알 수 없음'}</b></td><td><span class="key-val" onclick="copyKey('${l.key}')" title="클릭하여 복사">${l.key.slice(0,7)}****</span></td><td style="color:var(--sub)">${new Date(l.issuedAt).toLocaleDateString('ko-KR')}</td><td style="color:var(--sub)">${l.expiresAt||'무기한'}</td><td><button class="btn btn-ghost btn-sm" onclick="copyKey('${l.key}')">복사</button></td></tr>`;}).join('')}</tbody></table>`;
+  } else {
+    const myT=tools.filter(t=>t.authorId===me.id);
+    mc.innerHTML=myT.length?`<div class="tool-grid">${myT.map(toolCard).join('')}</div>`:`<div class="empty"><div class="empty-ico">🛠️</div><p>등록한 툴이 없습니다.</p></div>`;
+  }
+}
+
+/* ---- AUTH ---- */
+function doLogin(){
+  const e=document.getElementById('li-e').value.trim(),p=document.getElementById('li-p').value,err=document.getElementById('li-err');
+  err.classList.add('hidden');
+  const u=DB.users().find(u=>u.email===e&&u.password===p);
+  if(!u){err.textContent='이메일 또는 비밀번호가 올바르지 않습니다.';err.classList.remove('hidden');return;}
+  DB.setSid(u.id);updateNav();toast('로그인되었습니다!','ok');go('tools');
+}
+function doRegister(){
+  const n=document.getElementById('rg-n').value.trim(),e=document.getElementById('rg-e').value.trim(),p=document.getElementById('rg-p').value,err=document.getElementById('rg-err');
+  err.classList.add('hidden');
+  if(!n){err.textContent='닉네임을 입력해주세요.';err.classList.remove('hidden');return;}
+  if(!e){err.textContent='이메일을 입력해주세요.';err.classList.remove('hidden');return;}
+  if(p.length<6){err.textContent='비밀번호는 6자 이상이어야 합니다.';err.classList.remove('hidden');return;}
+  const users=DB.users();if(users.find(u=>u.email===e)){err.textContent='이미 사용 중인 이메일입니다.';err.classList.remove('hidden');return;}
+  const nu={id:uid(),username:n,email:e,password:p,bio:'',createdAt:new Date().toISOString()};
+  users.push(nu);DB.saveU(users);DB.setSid(nu.id);updateNav();toast('환영합니다!','ok');go('tools');
+}
+function doLogout(){DB.clearSid();updateNav();toast('로그아웃되었습니다.','info');go('home');}
+
+/* ---- DEMO DATA ---- */
+function initDemo(){
+  if(DB.tools().length)return;
+  const mkU=(n,e)=>({id:uid(),username:n,email:e,password:'demo123',bio:'',createdAt:new Date(Date.now()-864e5*30).toISOString()});
+  const users=[mkU('Kim DevMaster','kim@demo.com'),mkU('Park SDK','park@demo.com'),mkU('Choi Engine','choi@demo.com')];
+  DB.saveU(users);
+  const docs=(title,install,lang,usage)=>`<h4>// 설치</h4><p>${title}을(를) 프로젝트에 추가하는 방법입니다.</p><pre><code>${install}</code></pre><h4>// 기본 사용법</h4><p>설치 후 다음과 같이 사용하세요.</p><pre><code>${usage}</code></pre>`;
+  const tools=[
+    {id:uid(),authorId:users[0].id,authorName:'Kim DevMaster',title:'FlexCollider 2D',category:'physics',license:'free',price:0,desc:'Unity & Godot 전용 경량 2D 충돌 처리 SDK. 기존 대비 성능 30% 향상, 폴리곤/원형/복합 충돌체 지원.',latestVersion:'1.3.0',versions:[{ver:'1.3.0',notes:'성능 최적화 30%, 복합 충돌체 추가',date:'2026-03-01',size:'2.1MB'},{ver:'1.2.0',notes:'원형 충돌체 버그 수정',date:'2026-01-15',size:'2.0MB'}],engines:['Unity','Godot'],tags:['물리','충돌','2D','경량'],downloads:1243,createdAt:new Date(Date.now()-864e5*20).toISOString(),docs:docs('FlexCollider 2D','// Unity Package Manager\n// Window > Package Manager > Add package from git URL:\nhttps://github.com/gamedevkit/flexcollider2d.git','csharp','using FlexCollider;\n\npublic class Player : MonoBehaviour {\n    FlexBody2D body;\n\n    void Start() {\n        body = GetComponent<FlexBody2D>();\n        body.SetColliderShape(ColliderShape.Polygon);\n        body.mass = 1.5f;\n        body.friction = 0.3f;\n    }\n\n    void FixedUpdate() {\n        if (body.IsGrounded())\n            body.AddForce(Vector2.right * speed);\n    }\n}')},
+    {id:uid(),authorId:users[0].id,authorName:'Kim DevMaster',title:'NavMesh Pro',category:'ai',license:'paid',price:15000,desc:'Unity 전용 고성능 네비게이션 메시 SDK. 동적 장애물 실시간 업데이트, 멀티 에이전트 경로 계획 지원.',latestVersion:'2.1.0',versions:[{ver:'2.1.0',notes:'동적 장애물 실시간 업데이트 추가',date:'2026-02-20',size:'4.5MB'},{ver:'2.0.0',notes:'전면 API 리뉴얼, 성능 2배 향상',date:'2025-11-01',size:'4.2MB'}],engines:['Unity'],tags:['AI','네비게이션','패스파인딩','멀티에이전트'],downloads:567,createdAt:new Date(Date.now()-864e5*15).toISOString(),docs:docs('NavMesh Pro','// Unity Package Manager에서 추가 후:\n// Tools > NavMesh Pro > Setup Wizard 실행','csharp','using NavMeshPro;\n\npublic class Enemy : MonoBehaviour {\n    NavProAgent agent;\n    Transform player;\n\n    void Start() {\n        agent = GetComponent<NavProAgent>();\n        agent.speed = 3.5f;\n        agent.avoidanceRadius = 0.8f;\n    }\n\n    void Update() {\n        agent.SetDestination(player.position);\n        if (agent.remainingDistance < 1.5f)\n            Attack();\n    }\n}')},
+    {id:uid(),authorId:users[1].id,authorName:'Park SDK',title:'AudioEngine X',category:'audio',license:'free',price:0,desc:'범용 게임 오디오 SDK. 3D 공간 음향, 실시간 이펙트, WebGL 완벽 지원. 유니티·고도·바닐라JS 모두 사용 가능.',latestVersion:'3.0.1',versions:[{ver:'3.0.1',notes:'WebGL 성능 개선, 메모리 누수 수정',date:'2026-03-10',size:'3.2MB'},{ver:'3.0.0',notes:'3D 공간 사운드 엔진 도입',date:'2026-01-05',size:'3.0MB'}],engines:['범용'],tags:['오디오','3D사운드','BGM','WebGL'],downloads:2156,createdAt:new Date(Date.now()-864e5*10).toISOString(),docs:docs('AudioEngine X','# npm 설치\nnpm install @gamedevkit/audioengine-x\n\n# 또는 CDN\n<script src="https://cdn.gamedevkit.io/audioengine-x@3.0.1/bundle.js">','javascript','import { AudioEngine, SoundSource } from "@gamedevkit/audioengine-x";\n\nconst engine = new AudioEngine({ maxChannels: 32 });\nawait engine.initialize();\n\n// 3D 사운드 소스 생성\nconst fireSound = new SoundSource("fire.ogg", {\n    is3D: true,\n    rolloffFactor: 1.5,\n    maxDistance: 20\n});\n\nfireSound.setPosition(10, 0, 5);\nfireSound.play({ loop: false, volume: 0.8 });')},
+    {id:uid(),authorId:users[1].id,authorName:'Park SDK',title:'NetSync SDK',category:'network',license:'subscription',price:9900,desc:'Unity & Unreal 멀티플레이어 동기화 SDK. P2P + 서버 릴레이 하이브리드, 레이턴시 보상 내장.',latestVersion:'1.5.2',versions:[{ver:'1.5.2',notes:'레이턴시 보상 알고리즘 개선',date:'2026-03-05',size:'6.8MB'},{ver:'1.5.0',notes:'P2P 홀펀칭 지원',date:'2026-01-20',size:'6.5MB'}],engines:['Unity','Unreal'],tags:['멀티플레이','동기화','P2P','네트워크'],downloads:389,createdAt:new Date(Date.now()-864e5*5).toISOString(),docs:docs('NetSync SDK','// 라이선스 키 필요 — GameDevKit 계정에서 발급\n// Window > NetSync > License > Enter Key\n// 또는 환경변수: NETSYNC_LICENSE_KEY=GDEV-XXXX-XXXX-XXXX','csharp','using NetSync;\n\n[NetSyncObject]\npublic class PlayerController : MonoBehaviour {\n    [SyncVar] public float health = 100f;\n    [SyncVar] public Vector3 position;\n\n    void Update() {\n        if (IsLocalPlayer) {\n            position = transform.position;\n            // 자동으로 다른 클라이언트에 동기화됨\n        }\n    }\n\n    [ClientRpc]\n    void RpcPlayHitEffect() {\n        // 모든 클라이언트에서 실행\n        Instantiate(hitParticle, transform.position, Quaternion.identity);\n    }\n}')},
+    {id:uid(),authorId:users[2].id,authorName:'Choi Engine',title:'UIFlow Kit',category:'ui',license:'paid',price:12000,desc:'Unity 전용 반응형 UI 애니메이션 프레임워크. 60fps 보장 트윈 엔진, 드래그앤드롭 UI 빌더 포함.',latestVersion:'2.4.0',versions:[{ver:'2.4.0',notes:'다크모드 자동 전환, 접근성 개선',date:'2026-02-14',size:'8.1MB'},{ver:'2.3.0',notes:'신규 컴포넌트 12개 추가',date:'2025-12-01',size:'7.5MB'}],engines:['Unity'],tags:['UI','애니메이션','반응형','트윈'],downloads:445,createdAt:new Date(Date.now()-864e5*12).toISOString(),docs:docs('UIFlow Kit','// Unity Package Manager에서 설치:\nhttps://github.com/choiengine/uiflow.git\n\n// 또는 .unitypackage 직접 임포트','csharp','using UIFlow;\n\npublic class MenuController : MonoBehaviour {\n    [SerializeField] UIPanel mainPanel;\n    [SerializeField] UIPanel settingsPanel;\n\n    public void OpenSettings() {\n        mainPanel.AnimateOut(UIAnimation.SlideLeft, duration: 0.3f);\n        settingsPanel.AnimateIn(UIAnimation.SlideRight, duration: 0.3f,\n            onComplete: () => Debug.Log("Settings opened"));\n    }\n\n    public void ApplyTheme() {\n        UITheme.Apply(UITheme.Dark); // 다크/라이트 전환\n    }\n}')},
+    {id:uid(),authorId:users[2].id,authorName:'Choi Engine',title:'PixelShader Pack',category:'render',license:'free',price:0,desc:'Godot 4 전용 픽셀아트 셰이더 팩. 팔레트 제한, CRT 효과, 아웃라인 등 20가지 셰이더 포함.',latestVersion:'1.1.0',versions:[{ver:'1.1.0',notes:'CRT 스캔라인 셰이더, 팔레트 스왑 개선',date:'2026-03-08',size:'1.4MB'}],engines:['Godot'],tags:['셰이더','픽셀아트','시각효과','CRT'],downloads:987,createdAt:new Date(Date.now()-864e5*8).toISOString(),docs:docs('PixelShader Pack','# Godot 4 에셋 라이브러리에서 설치\n# AssetLib > 검색: PixelShader Pack\n# 또는 ZIP 다운로드 후 프로젝트에 복사','gdscript','# 팔레트 제한 셰이더 적용 예시\nextends Sprite2D\n\nvar pixel_shader = preload("res://addons/pixelshader/palette_limit.gdshader")\n\nfunc _ready():\n    material = ShaderMaterial.new()\n    material.shader = pixel_shader\n    # 4색 팔레트로 제한\n    material.set_shader_parameter("palette_size", 4)\n    material.set_shader_parameter("dither_strength", 0.8)')},
+    {id:uid(),authorId:users[0].id,authorName:'Kim DevMaster',title:'SaveSystem Plus',category:'util',license:'free',price:0,desc:'Unity & Godot 범용 세이브 시스템. AES 암호화 저장, 자동 백업, 클라우드 세이브 연동 지원.',latestVersion:'2.0.0',versions:[{ver:'2.0.0',notes:'AES-256 암호화 세이브 지원',date:'2026-02-28',size:'0.9MB'},{ver:'1.9.0',notes:'자동 백업 기능 추가',date:'2025-10-10',size:'0.8MB'}],engines:['Unity','Godot'],tags:['세이브','로드','암호화','직렬화'],downloads:1876,createdAt:new Date(Date.now()-864e5*18).toISOString(),docs:docs('SaveSystem Plus','// Unity:\n// Window > Package Manager > Add from URL:\nhttps://github.com/gamedevkit/savesystem-plus.git\n\n// Godot:\n// addons/ 폴더에 복사 후 Project > Plugins 활성화','csharp','using SaveSystemPlus;\n\n// 저장\npublic void SaveGame() {\n    var data = new SaveData();\n    data.Set("player_hp", player.health);\n    data.Set("position", transform.position);\n    data.Set("inventory", inventory.items);\n\n    SaveManager.Save("slot_1", data, encrypted: true);\n}\n\n// 불러오기\npublic void LoadGame() {\n    if (SaveManager.HasSave("slot_1")) {\n        var data = SaveManager.Load("slot_1");\n        player.health = data.Get<float>("player_hp");\n        transform.position = data.Get<Vector3>("position");\n    }\n}')},
+    {id:uid(),authorId:users[1].id,authorName:'Park SDK',title:'Pathfinder Lite',category:'ai',license:'free',price:0,desc:'범용 A* 경로탐색 라이브러리. 그리드/가중치 그래프 지원, WebAssembly 최적화 빌드 제공.',latestVersion:'1.0.3',versions:[{ver:'1.0.3',notes:'메모리 사용량 25% 절감',date:'2026-01-20',size:'0.6MB'}],engines:['범용'],tags:['A*','경로탐색','그리드','WASM'],downloads:743,createdAt:new Date(Date.now()-864e5*25).toISOString(),docs:docs('Pathfinder Lite','# npm\nnpm install @gamedevkit/pathfinder-lite\n\n# Python (pip)\npip install gamedevkit-pathfinder','javascript','import { Grid, AStar } from "@gamedevkit/pathfinder-lite";\n\n// 20x20 그리드 생성\nconst grid = new Grid(20, 20);\n\n// 장애물 설정\ngrid.setWalkable(5, 3, false);\ngrid.setWalkable(5, 4, false);\n\n// 경로 탐색\nconst pathfinder = new AStar(grid);\nconst path = pathfinder.findPath(\n    { x: 0, y: 0 },   // 시작\n    { x: 15, y: 18 }  // 목표\n);\n\nconsole.log(`경로 길이: ${path.length}칸`);')},
+    {id:uid(),authorId:users[2].id,authorName:'Choi Engine',title:'DialogueTree SDK',category:'util',license:'paid',price:8000,desc:'Unity & Godot 대화 시스템 SDK. 비주얼 노드 에디터, 조건 분기, 현지화(i18n) 완벽 지원.',latestVersion:'1.8.0',versions:[{ver:'1.8.0',notes:'비주얼 노드 에디터 추가',date:'2026-03-12',size:'3.7MB'},{ver:'1.7.0',notes:'다중 조건 분기 개선',date:'2025-09-15',size:'3.4MB'}],engines:['Unity','Godot'],tags:['대화','RPG','스크립팅','i18n'],downloads:632,createdAt:new Date(Date.now()-864e5*7).toISOString(),docs:docs('DialogueTree SDK','// Unity 설치:\n// Window > Package Manager > Add from git URL\nhttps://github.com/choiengine/dialogue-tree.git\n\n// 이후 Tools > DialogueTree > Create New Dialogue 로 대화 파일 생성','csharp','using DialogueTree;\n\npublic class NPC : MonoBehaviour, IDialogueTarget {\n    [SerializeField] DialogueAsset shopDialogue;\n    DialoguePlayer player;\n\n    void Start() {\n        player = GetComponent<DialoguePlayer>();\n        player.OnLineDisplayed += ShowTextUI;\n        player.OnChoicePresented += ShowChoiceUI;\n    }\n\n    public void StartConversation() {\n        player.Play(shopDialogue);\n    }\n\n    void ShowTextUI(DialogueLine line) {\n        ui.SetSpeaker(line.speaker);\n        ui.SetText(line.localizedText);\n    }\n}')},
+    {id:uid(),authorId:users[2].id,authorName:'Choi Engine',title:'ProCamera 3D',category:'render',license:'paid',price:20000,desc:'Unity & Unreal 시네마틱 카메라 SDK. 돌리줌, 셰이크, 시네마틱 트랙 지원. AAA급 카메라 연출.',latestVersion:'3.2.1',versions:[{ver:'3.2.1',notes:'시네마틱 타임라인 통합 개선',date:'2026-03-03',size:'5.2MB'},{ver:'3.2.0',notes:'Unreal Engine 5.4 지원',date:'2025-12-20',size:'5.0MB'},{ver:'3.1.0',notes:'돌리줌 이펙트 추가',date:'2025-08-01',size:'4.8MB'}],engines:['Unity','Unreal'],tags:['카메라','시네마틱','3D','돌리줌'],downloads:298,createdAt:new Date(Date.now()-864e5*3).toISOString(),docs:docs('ProCamera 3D','// Unity Package Manager:\nhttps://github.com/choiengine/procamera3d.git\n\n// Unreal Engine:\n// Marketplace에서 설치 또는 .uplugin 직접 추가','csharp','using ProCamera3D;\n\npublic class CameraController : MonoBehaviour {\n    ProCam3D cam;\n\n    void Start() {\n        cam = GetComponent<ProCam3D>();\n        cam.SetTarget(player.transform);\n        cam.SetOffset(new Vector3(0, 3, -8));\n    }\n\n    // 보스 등장 연출\n    public IEnumerator BossIntro() {\n        cam.PlayCinematic("BossIntro"); // 미리 제작한 트랙 재생\n        yield return cam.WaitForCinematic();\n        // 전투 카메라로 전환\n        cam.TransitionTo(combatCam, duration: 0.8f, ease: Ease.InOutCubic);\n    }\n\n    void OnPlayerHit() {\n        cam.Shake(intensity: 0.4f, duration: 0.3f);\n    }\n}')}
+  ];
+  DB.saveT(tools);
+  // demo purchases (kim has NavMesh Pro license, UIFlow Kit license)
+  const lics=[];
+  const kim=users[0];const navTool=tools.find(t=>t.title==='NavMesh Pro');const uiTool=tools.find(t=>t.title==='UIFlow Kit');
+  if(navTool)lics.push({id:uid(),userId:kim.id,toolId:navTool.id,key:genKey(),issuedAt:new Date(Date.now()-864e5*5).toISOString(),expiresAt:null});
+  if(uiTool)lics.push({id:uid(),userId:kim.id,toolId:uiTool.id,key:genKey(),issuedAt:new Date(Date.now()-864e5*3).toISOString(),expiresAt:null});
+  DB.saveLics(lics);
+  // demo downloads
+  const dls=[];const freeTool=tools.find(t=>t.title==='FlexCollider 2D');const audTool=tools.find(t=>t.title==='AudioEngine X');
+  if(freeTool)dls.push({id:uid(),userId:kim.id,toolId:freeTool.id,version:'1.3.0',at:new Date(Date.now()-864e5*2).toISOString()});
+  if(audTool)dls.push({id:uid(),userId:kim.id,toolId:audTool.id,version:'3.0.1',at:new Date(Date.now()-864e5*1).toISOString()});
+  if(navTool)dls.push({id:uid(),userId:kim.id,toolId:navTool.id,version:'2.1.0',at:new Date().toISOString()});
+  DB.saveDls(dls);
+}
+
+// INIT
+initDemo();
+document.getElementById('li-p').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+go(DB.me()?'tools':'home');
+</script>
+</body>
+</html>

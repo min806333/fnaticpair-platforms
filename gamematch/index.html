@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GameMatch — 게임 개발자 팀 매칭</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#07070f;--bg2:#0d0d1a;--card:#111120;--card2:#161628;--bdr:#2a2a4a;--txt:#e8e8f0;--mut:#7070a0;--cy:#00f5ff;--pk:#ff2d78;--gn:#39ff14;--yw:#ffe600;--pu:#bf5fff}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:9999}
+.hidden{display:none!important}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 4%;background:rgba(7,7,15,.96);border-bottom:2px solid var(--cy);z-index:100;gap:.5rem;overflow:hidden}
+.nav-logo{font-family:'Press Start 2P',monospace;font-size:.85rem;color:var(--cy);text-shadow:0 0 10px var(--cy);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.nav-logo span{color:var(--pk);text-shadow:0 0 10px var(--pk)}
+.nav-group{display:flex;align-items:center;gap:.3rem;overflow-x:auto;scrollbar-width:none;flex-shrink:1}
+.nav-group::-webkit-scrollbar{display:none}
+.nb{font-size:.72rem;font-weight:700;background:transparent;border:none;color:var(--mut);cursor:pointer;padding:.28rem .55rem;white-space:nowrap;transition:color .2s}
+.nb:hover{color:var(--txt)}
+.nb-cta{border:2px solid var(--cy);color:var(--cy)!important;padding:.24rem .8rem}
+.nb-cta:hover{background:rgba(0,245,255,.1)}
+.nbadge{background:var(--pk);color:#fff;font-size:.55rem;padding:.08rem .35rem;border-radius:99px;margin-left:.2rem}
+
+/* APP */
+#app{padding-top:58px;min-height:100vh}
+.view{display:none}.view.active{display:block}
+
+/* LANDING */
+.lhero{min-height:calc(100vh - 58px);display:flex;align-items:center;justify-content:center;text-align:center;padding:3rem 6%;position:relative;overflow:hidden}
+.lgrid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,245,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,.04) 1px,transparent 1px);background-size:36px 36px}
+.lglow{position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(0,245,255,.07),transparent 70%),radial-gradient(ellipse 40% 40% at 80% 70%,rgba(255,45,120,.06),transparent 60%)}
+.lcon{position:relative;z-index:2;max-width:760px}
+.ltag{display:inline-block;border:2px solid var(--cy);color:var(--cy);font-family:'Press Start 2P',monospace;font-size:.48rem;padding:.35rem .9rem;letter-spacing:2px;margin-bottom:1.8rem}
+.ltitle{font-family:'Press Start 2P',monospace;font-size:clamp(1.2rem,4vw,2.5rem);line-height:1.55;margin-bottom:.8rem}
+.tc{color:var(--cy);text-shadow:0 0 14px var(--cy)}.tp{color:var(--pk);text-shadow:0 0 14px var(--pk)}
+.lsub{font-size:1rem;color:var(--mut);max-width:460px;margin:0 auto 2.4rem}
+.lbtns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+
+.psec{padding:4.5rem 6%;background:var(--bg2)}
+.stitle{font-family:'Press Start 2P',monospace;font-size:clamp(.82rem,2.4vw,1.35rem)}
+.ssub{color:var(--mut);font-size:.96rem;margin-top:.5rem;margin-bottom:2.8rem}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.1rem}
+.pcard{background:var(--card);border:2px solid var(--bdr);padding:1.7rem 1.3rem;text-align:center;cursor:pointer;transition:border-color .3s,box-shadow .3s,transform .2s}
+.pcard:hover{transform:translateY(-4px)}
+.pcard[data-pos=dev]:hover{border-color:var(--cy);box-shadow:0 0 20px rgba(0,245,255,.13)}
+.pcard[data-pos=art]:hover{border-color:var(--pk);box-shadow:0 0 20px rgba(255,45,120,.13)}
+.pcard[data-pos=plan]:hover{border-color:var(--gn);box-shadow:0 0 20px rgba(57,255,20,.13)}
+.pcard[data-pos=sound]:hover{border-color:var(--yw);box-shadow:0 0 20px rgba(255,230,0,.13)}
+.pico{font-size:2.2rem;margin-bottom:.8rem}
+.pname{font-family:'Press Start 2P',monospace;font-size:.58rem;line-height:1.8;margin-bottom:.45rem}
+.pdesc{font-size:.82rem;color:var(--mut)}
+
+/* AUTH */
+.awrap{min-height:calc(100vh - 58px);display:flex;align-items:flex-start;justify-content:center;padding:3rem 6%}
+.abox{background:var(--card);border:2px solid var(--bdr);padding:2.3rem;width:100%;max-width:460px}
+.atitle{font-family:'Press Start 2P',monospace;font-size:.82rem;color:var(--cy);text-shadow:0 0 10px var(--cy);margin-bottom:1.8rem;line-height:1.8}
+.anote{font-size:.76rem;color:var(--mut);background:var(--card2);border:1px solid var(--bdr);padding:.65rem .9rem;margin-bottom:1.4rem;line-height:1.6}
+.anote code{color:var(--cy)}
+.fg{display:flex;flex-direction:column;gap:.36rem;margin-bottom:1rem}
+.fl{font-size:.68rem;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:1px}
+.fi,.fta,.fse{background:var(--card2);border:2px solid var(--bdr);padding:.7rem .9rem;color:var(--txt);font-size:.9rem;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color .3s;width:100%;border-radius:0}
+.fi:focus,.fta:focus,.fse:focus{border-color:var(--cy)}
+.fta{min-height:82px;resize:vertical}
+.fse option{background:var(--card2)}
+.ferr{font-size:.74rem;color:var(--pk);margin-top:.22rem}
+.psel{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.popt{border:2px solid var(--bdr);padding:.68rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--card2)}
+.popt .oi{font-size:1.25rem;display:block;margin-bottom:.22rem}
+.popt .on{font-size:.66rem;font-weight:700;color:var(--mut)}
+.popt.sel[data-pos=dev]{border-color:var(--cy);background:rgba(0,245,255,.08)}.popt.sel[data-pos=dev] .on{color:var(--cy)}
+.popt.sel[data-pos=art]{border-color:var(--pk);background:rgba(255,45,120,.08)}.popt.sel[data-pos=art] .on{color:var(--pk)}
+.popt.sel[data-pos=plan]{border-color:var(--gn);background:rgba(57,255,20,.08)}.popt.sel[data-pos=plan] .on{color:var(--gn)}
+.popt.sel[data-pos=sound]{border-color:var(--yw);background:rgba(255,230,0,.08)}.popt.sel[data-pos=sound] .on{color:var(--yw)}
+.afooter{text-align:center;margin-top:1.3rem;font-size:.82rem;color:var(--mut)}
+.afooter a{color:var(--cy);cursor:pointer;text-decoration:underline}
+
+/* BUTTONS */
+.btn{font-family:'Noto Sans KR',sans-serif;font-size:.88rem;font-weight:700;padding:.7rem 1.3rem;cursor:pointer;border:none;transition:transform .15s,box-shadow .15s;display:inline-flex;align-items:center;gap:.38rem;letter-spacing:.3px}
+.btn:hover:not(:disabled){transform:translate(-2px,-2px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-cy{background:var(--cy);color:#000;box-shadow:3px 3px 0 #004a50}
+.btn-cy:hover:not(:disabled){box-shadow:5px 5px 0 #004a50}
+.btn-pk{background:transparent;color:var(--pk);border:2px solid var(--pk);box-shadow:3px 3px 0 #500020}
+.btn-pk:hover:not(:disabled){background:rgba(255,45,120,.08);box-shadow:5px 5px 0 #500020}
+.btn-gh{background:transparent;color:var(--mut);border:2px solid var(--bdr)}
+.btn-gh:hover:not(:disabled){border-color:var(--cy);color:var(--cy)}
+.btn-dn{background:transparent;color:#ff4444;border:2px solid #ff4444}
+.btn-dn:hover:not(:disabled){background:rgba(255,68,68,.1)}
+.btn-ok{background:transparent;color:var(--gn);border:2px solid var(--gn)}
+.btn-ok:hover:not(:disabled){background:rgba(57,255,20,.1)}
+.btn-pu{background:transparent;color:var(--pu);border:2px solid var(--pu)}
+.btn-pu:hover:not(:disabled){background:rgba(191,95,255,.1)}
+.btn-sm{font-size:.74rem;padding:.42rem .85rem}
+.btn-full{width:100%;justify-content:center}
+
+/* SECTION COMMON */
+.swrap{padding:2rem 5%}
+.sh{margin-bottom:2rem}
+.spre{font-family:'Press Start 2P',monospace;font-size:.58rem;color:var(--cy);letter-spacing:3px;margin-bottom:.6rem}
+.spre::before{content:'// ';color:var(--mut)}
+
+/* DASHBOARD */
+.ftabs{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1rem}
+.ft{font-size:.76rem;font-weight:700;padding:.4rem .9rem;border:2px solid var(--bdr);background:transparent;color:var(--mut);cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.ft:hover{border-color:var(--cy);color:var(--cy)}
+.ft.on{background:var(--cy);color:#000;border-color:var(--cy)}
+.ft[data-f=art].on{background:var(--pk);border-color:var(--pk);color:#fff}
+.ft[data-f=plan].on{background:var(--gn);border-color:var(--gn);color:#000}
+.ft[data-f=sound].on{background:var(--yw);border-color:var(--yw);color:#000}
+.ssearch{width:100%;max-width:380px;margin-bottom:1.5rem}
+
+/* REC SECTION */
+.rec-sec{margin-bottom:2rem}
+.rec-label{font-family:'Press Start 2P',monospace;font-size:.55rem;color:var(--yw);margin-bottom:.9rem;letter-spacing:2px}
+.rec-label::before{content:'★ '}
+.rec-row{display:flex;gap:1rem;overflow-x:auto;padding-bottom:.5rem;scrollbar-width:none}
+.rec-row::-webkit-scrollbar{display:none}
+.rec-chip{background:var(--card);border:2px solid var(--bdr);padding:.8rem 1rem;display:flex;align-items:center;gap:.8rem;flex-shrink:0;cursor:pointer;transition:border-color .2s,transform .2s;min-width:180px}
+.rec-chip:hover{transform:translate(-2px,-2px)}
+.rec-chip[data-pos=dev]{border-color:rgba(0,245,255,.3)}
+.rec-chip[data-pos=art]{border-color:rgba(255,45,120,.3)}
+.rec-chip[data-pos=plan]{border-color:rgba(57,255,20,.3)}
+.rec-chip[data-pos=sound]{border-color:rgba(255,230,0,.3)}
+
+/* USER GRID & CARD */
+.ugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.1rem}
+.ucard{background:var(--card);border:2px solid var(--bdr);padding:1.38rem;position:relative;transition:border-color .3s,box-shadow .3s,transform .2s;overflow:hidden;display:flex;flex-direction:column}
+.ucard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.ucard[data-pos=dev]::before{background:var(--cy)}.ucard[data-pos=dev]:hover{border-color:var(--cy);box-shadow:4px 4px 0 rgba(0,245,255,.1);transform:translate(-2px,-2px)}
+.ucard[data-pos=art]::before{background:var(--pk)}.ucard[data-pos=art]:hover{border-color:var(--pk);box-shadow:4px 4px 0 rgba(255,45,120,.1);transform:translate(-2px,-2px)}
+.ucard[data-pos=plan]::before{background:var(--gn)}.ucard[data-pos=plan]:hover{border-color:var(--gn);box-shadow:4px 4px 0 rgba(57,255,20,.1);transform:translate(-2px,-2px)}
+.ucard[data-pos=sound]::before{background:var(--yw)}.ucard[data-pos=sound]:hover{border-color:var(--yw);box-shadow:4px 4px 0 rgba(255,230,0,.1);transform:translate(-2px,-2px)}
+.ctop{display:flex;align-items:flex-start;gap:.85rem;margin-bottom:.85rem;justify-content:space-between}
+.ctop-left{display:flex;align-items:flex-start;gap:.85rem}
+.cav{width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:.95rem;border:2px solid;flex-shrink:0}
+.cav[data-pos=dev]{border-color:var(--cy);color:var(--cy);background:rgba(0,245,255,.08)}
+.cav[data-pos=art]{border-color:var(--pk);color:var(--pk);background:rgba(255,45,120,.08)}
+.cav[data-pos=plan]{border-color:var(--gn);color:var(--gn);background:rgba(57,255,20,.08)}
+.cav[data-pos=sound]{border-color:var(--yw);color:var(--yw);background:rgba(255,230,0,.08)}
+.cuname{font-weight:700;font-size:.95rem;margin-bottom:.25rem}
+.cbio{font-size:.82rem;color:var(--mut);line-height:1.6;margin-bottom:.82rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cskills{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.85rem}
+.stag{font-size:.64rem;font-weight:700;padding:.14rem .5rem;border:1px solid var(--bdr);color:var(--mut)}
+.cacts{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:auto}
+.pbadge{font-size:.65rem;font-weight:700;padding:.13rem .52rem;display:inline-block;border:1px solid}
+.pbadge[data-pos=dev]{color:var(--cy);border-color:rgba(0,245,255,.35);background:rgba(0,245,255,.08)}
+.pbadge[data-pos=art]{color:var(--pk);border-color:rgba(255,45,120,.35);background:rgba(255,45,120,.08)}
+.pbadge[data-pos=plan]{color:var(--gn);border-color:rgba(57,255,20,.35);background:rgba(57,255,20,.08)}
+.pbadge[data-pos=sound]{color:var(--yw);border-color:rgba(255,230,0,.35);background:rgba(255,230,0,.08)}
+.conn-b{font-size:.68rem;color:var(--gn);border:1px solid var(--gn);padding:.26rem .6rem;display:inline-flex;align-items:center;gap:.25rem}
+.pend-b{font-size:.68rem;color:var(--yw);border:1px solid var(--yw);padding:.26rem .6rem}
+.bm-btn{background:transparent;border:none;cursor:pointer;font-size:1rem;padding:.1rem .2rem;line-height:1;transition:transform .2s}
+.bm-btn:hover{transform:scale(1.3)}
+.lastseen{font-size:.64rem;color:var(--mut);margin-top:.28rem}
+.genre-chip{font-size:.63rem;padding:.13rem .5rem;border:1px solid;border-radius:2px;font-weight:700;margin-right:.3rem;margin-top:.3rem;display:inline-block}
+.empty{text-align:center;padding:3.5rem 2rem;color:var(--mut);grid-column:1/-1}
+.empty-ico{font-size:2.6rem;margin-bottom:.85rem}
+.empty p{font-family:'Press Start 2P',monospace;font-size:.62rem;line-height:1.9}
+
+/* PROFILE COMPLETION */
+.comp-wrap{margin-bottom:1.5rem;padding:1.2rem;background:var(--card2);border:1px solid var(--bdr)}
+.comp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.comp-label{font-size:.78rem;font-weight:700;color:var(--mut)}
+.comp-pct{font-family:'Press Start 2P',monospace;font-size:.7rem;color:var(--cy)}
+.comp-bar{background:var(--bdr);height:6px;overflow:hidden}
+.comp-fill{height:100%;background:linear-gradient(90deg,var(--cy),var(--gn));transition:width .5s ease}
+.comp-hint{font-size:.72rem;color:var(--mut);margin-top:.5rem;line-height:1.6}
+
+/* GENRE GRID */
+.ggrid{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.3rem}
+.gopt{font-size:.74rem;font-weight:700;padding:.28rem .7rem;border:2px solid var(--bdr);background:var(--card2);color:var(--mut);cursor:pointer;transition:all .2s}
+.gopt.sel{border-color:var(--pu);color:var(--pu);background:rgba(191,95,255,.1)}
+.lkgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.lkopt{border:2px solid var(--bdr);padding:.58rem .75rem;cursor:pointer;display:flex;align-items:center;gap:.5rem;font-size:.8rem;font-weight:700;color:var(--mut);transition:all .2s;background:var(--card2)}
+.lkopt.sel[data-pos=dev]{border-color:var(--cy);color:var(--cy);background:rgba(0,245,255,.07)}
+.lkopt.sel[data-pos=art]{border-color:var(--pk);color:var(--pk);background:rgba(255,45,120,.07)}
+.lkopt.sel[data-pos=plan]{border-color:var(--gn);color:var(--gn);background:rgba(57,255,20,.07)}
+.lkopt.sel[data-pos=sound]{border-color:var(--yw);color:var(--yw);background:rgba(255,230,0,.07)}
+
+/* USER DETAIL */
+.dwrap{padding:2rem 5%;max-width:660px;margin:0 auto}
+.dhead{display:flex;align-items:flex-start;gap:1.4rem;margin-bottom:2rem;padding-bottom:2rem;border-bottom:2px solid var(--bdr)}
+.dav{width:74px;height:74px;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:1.6rem;border:3px solid;flex-shrink:0}
+.dav[data-pos=dev]{border-color:var(--cy);color:var(--cy);background:rgba(0,245,255,.08)}
+.dav[data-pos=art]{border-color:var(--pk);color:var(--pk);background:rgba(255,45,120,.08)}
+.dav[data-pos=plan]{border-color:var(--gn);color:var(--gn);background:rgba(57,255,20,.08)}
+.dav[data-pos=sound]{border-color:var(--yw);color:var(--yw);background:rgba(255,230,0,.08)}
+.dname{font-size:1.3rem;font-weight:700;margin-bottom:.32rem}
+.demail{font-size:.82rem;color:var(--mut);margin-bottom:.5rem}
+.dsec{margin-bottom:1.6rem}
+.dsec h4{font-family:'Press Start 2P',monospace;font-size:.58rem;color:var(--cy);margin-bottom:.65rem;letter-spacing:2px}
+.dsec p{color:var(--mut);font-size:.92rem;line-height:1.7}
+.dskills{display:flex;flex-wrap:wrap;gap:.42rem}
+.dsk{font-size:.76rem;font-weight:700;padding:.2rem .62rem;border:1px solid var(--bdr);color:var(--mut)}
+
+/* REQUESTS */
+.rtabs{display:flex;margin-bottom:1.8rem}
+.rtab{font-weight:700;font-size:.82rem;padding:.52rem 1.3rem;border:2px solid var(--bdr);background:transparent;color:var(--mut);cursor:pointer;transition:all .2s}
+.rtab:first-child{border-right:none}
+.rtab.on{background:var(--cy);color:#000;border-color:var(--cy)}
+.rlist{display:flex;flex-direction:column;gap:.9rem}
+.rcard{background:var(--card);border:2px solid var(--bdr);padding:1.2rem;display:flex;align-items:flex-start;gap:.9rem;flex-wrap:wrap}
+.rinfo{flex:1;min-width:160px}
+.runame{font-weight:700;font-size:.95rem;margin-bottom:.25rem}
+.rmsg{font-size:.84rem;color:var(--mut);margin-top:.42rem;line-height:1.6;font-style:italic}
+.rtime{font-size:.7rem;color:var(--mut);margin-top:.35rem}
+.ract{display:flex;gap:.5rem;align-items:center;flex-shrink:0}
+.stbadge{font-size:.7rem;font-weight:700;padding:.2rem .65rem;letter-spacing:.4px;border:1px solid}
+.st-p{color:var(--yw);border-color:var(--yw)}.st-a{color:var(--gn);border-color:var(--gn)}.st-r{color:var(--mut);border-color:var(--bdr)}
+
+/* PROJECTS */
+.projgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.1rem}
+.projcard{background:var(--card);border:2px solid var(--bdr);padding:1.5rem;display:flex;flex-direction:column;gap:.75rem;transition:border-color .3s,transform .2s}
+.projcard:hover{border-color:var(--cy);transform:translate(-2px,-2px)}
+.projcard-title{font-size:1.05rem;font-weight:700}
+.projcard-author{font-size:.78rem;color:var(--mut)}
+.projcard-desc{font-size:.84rem;color:var(--mut);line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.proj-badges{display:flex;flex-wrap:wrap;gap:.35rem}
+.proj-badge{font-size:.64rem;font-weight:700;padding:.14rem .5rem;border:1px solid}
+.proj-badge.genre{color:var(--pu);border-color:rgba(191,95,255,.4);background:rgba(191,95,255,.08)}
+.proj-badge.pos[data-pos=dev]{color:var(--cy);border-color:rgba(0,245,255,.35);background:rgba(0,245,255,.08)}
+.proj-badge.pos[data-pos=art]{color:var(--pk);border-color:rgba(255,45,120,.35);background:rgba(255,45,120,.08)}
+.proj-badge.pos[data-pos=plan]{color:var(--gn);border-color:rgba(57,255,20,.35);background:rgba(57,255,20,.08)}
+.proj-badge.pos[data-pos=sound]{color:var(--yw);border-color:rgba(255,230,0,.35);background:rgba(255,230,0,.08)}
+.proj-acts{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:auto;padding-top:.5rem;border-top:1px solid var(--bdr)}
+
+/* GAMEJAM */
+.jamgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.1rem}
+.jamcard{background:var(--card);border:2px solid rgba(255,230,0,.25);padding:1.5rem;display:flex;flex-direction:column;gap:.75rem;transition:border-color .3s,transform .2s}
+.jamcard:hover{border-color:var(--yw);transform:translate(-2px,-2px)}
+.jamcard-title{font-size:1.05rem;font-weight:700}
+.jam-theme{display:inline-block;font-family:'Press Start 2P',monospace;font-size:.52rem;color:var(--yw);border:1px solid var(--yw);padding:.2rem .55rem;letter-spacing:1px}
+.jam-dates{font-size:.78rem;color:var(--mut)}
+.jam-desc{font-size:.84rem;color:var(--mut);line-height:1.65}
+.jam-link{font-size:.78rem;color:var(--cy);text-decoration:none;display:flex;align-items:center;gap:.3rem}
+.jam-link:hover{text-shadow:0 0 8px var(--cy)}
+
+/* FEED */
+.flist{display:flex;flex-direction:column;gap:.8rem}
+.fitem{background:var(--card);border:1px solid var(--bdr);padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;transition:border-color .3s}
+.fitem:hover{border-color:rgba(0,245,255,.2)}
+.fitem-icon{font-size:1.5rem;flex-shrink:0}
+.fitem-text{flex:1;font-size:.88rem;line-height:1.65}
+.fitem-text strong{color:var(--txt)}
+.fitem-text span{color:var(--mut)}
+.fitem-time{font-size:.7rem;color:var(--mut);flex-shrink:0}
+
+/* CHAT */
+.chat-layout{display:grid;grid-template-columns:240px 1fr;height:calc(100vh - 58px)}
+.chat-sidebar{background:var(--bg2);border-right:2px solid var(--bdr);overflow-y:auto}
+.chat-sidebar-title{font-family:'Press Start 2P',monospace;font-size:.58rem;color:var(--cy);padding:1.2rem 1rem;border-bottom:2px solid var(--bdr);letter-spacing:2px}
+.chat-user{padding:.9rem 1rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:background .2s;border-bottom:1px solid var(--bdr)}
+.chat-user:hover,.chat-user.active{background:var(--card)}
+.chat-user .cuname{font-size:.85rem;font-weight:700}
+.chat-main{display:flex;flex-direction:column}
+.chat-header{padding:1rem 1.5rem;border-bottom:2px solid var(--bdr);display:flex;align-items:center;gap:.8rem;background:var(--bg2)}
+.chat-msgs{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:.75rem}
+.chat-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--mut);font-size:.82rem;text-align:center}
+.msg{max-width:70%;padding:.65rem .95rem;font-size:.88rem;line-height:1.6;word-break:break-word}
+.msg-mine{background:rgba(0,245,255,.12);border:1px solid rgba(0,245,255,.3);align-self:flex-end;color:var(--txt)}
+.msg-other{background:var(--card2);border:1px solid var(--bdr);align-self:flex-start;color:var(--txt)}
+.msg-time{font-size:.62rem;color:var(--mut);margin-top:.25rem}
+.chat-input{padding:1rem 1.5rem;border-top:2px solid var(--bdr);display:flex;gap:.8rem;background:var(--bg2)}
+.chat-input input{flex:1;background:var(--card);border:2px solid var(--bdr);padding:.65rem .9rem;color:var(--txt);font-size:.9rem;font-family:'Noto Sans KR',sans-serif;outline:none}
+.chat-input input:focus{border-color:var(--cy)}
+
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.83);z-index:500;display:flex;align-items:center;justify-content:center;padding:2rem}
+.mbox{background:var(--card);border:2px solid var(--cy);padding:1.9rem;width:100%;max-width:480px;box-shadow:0 0 30px rgba(0,245,255,.14);max-height:90vh;overflow-y:auto}
+.mtitle{font-family:'Press Start 2P',monospace;font-size:.7rem;color:var(--cy);margin-bottom:1.3rem;line-height:1.8}
+.macts{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.3rem}
+.chk-grid{display:flex;flex-wrap:wrap;gap:.5rem}
+.chk-opt{font-size:.74rem;font-weight:700;padding:.26rem .65rem;border:2px solid var(--bdr);background:var(--card2);color:var(--mut);cursor:pointer;transition:all .2s}
+.chk-opt.sel{border-color:var(--cy);color:var(--cy);background:rgba(0,245,255,.07)}
+.chk-opt.sel[data-pos=art]{border-color:var(--pk);color:var(--pk);background:rgba(255,45,120,.07)}
+.chk-opt.sel[data-pos=plan]{border-color:var(--gn);color:var(--gn);background:rgba(57,255,20,.07)}
+.chk-opt.sel[data-pos=sound]{border-color:var(--yw);color:var(--yw);background:rgba(255,230,0,.07)}
+
+/* TOAST */
+#tc{position:fixed;bottom:1.8rem;right:1.8rem;z-index:9000;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{background:var(--card);border:2px solid;padding:.65rem 1.05rem;font-size:.82rem;font-weight:700;max-width:280px;animation:tIn .3s ease}
+.t-ok{border-color:var(--gn);color:var(--gn)}.t-err{border-color:var(--pk);color:var(--pk)}.t-info{border-color:var(--cy);color:var(--cy)}
+@keyframes tIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+@media(max-width:640px){
+  .ugrid,.projgrid,.jamgrid{grid-template-columns:1fr}
+  .pgrid{grid-template-columns:1fr 1fr}
+  .psel,.lkgrid{grid-template-columns:1fr 1fr}
+  .dhead{flex-direction:column}
+  .chat-layout{grid-template-columns:1fr}
+  .chat-sidebar{display:none}
+}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+<nav id="nav">
+  <div class="nav-logo" onclick="go('landing')">Game<span>Match</span></div>
+  <div id="nav-g" class="nav-group">
+    <button class="nb" onclick="go('login')">로그인</button>
+    <button class="nb nb-cta" onclick="go('register')">회원가입</button>
+  </div>
+  <div id="nav-a" class="nav-group hidden">
+    <button class="nb" onclick="go('dashboard')">🔍 찾기</button>
+    <button class="nb" onclick="go('projects')">📁 프로젝트</button>
+    <button class="nb" onclick="go('gamejam')">🎮 게임잼</button>
+    <button class="nb" onclick="go('feed')">📰 피드</button>
+    <button class="nb" onclick="go('teammates')">👥 팀원</button>
+    <button class="nb" onclick="go('bookmarks')">🔖 북마크</button>
+    <button class="nb" onclick="go('requests')">요청<span class="nbadge hidden" id="rbadge">0</span></button>
+    <button class="nb" onclick="go('myprofile')">프로필</button>
+    <button class="nb" onclick="doLogout()">로그아웃</button>
+  </div>
+</nav>
+<div id="app">
+<!-- LANDING -->
+<div id="v-landing" class="view">
+  <section class="lhero"><div class="lgrid"></div><div class="lglow"></div>
+    <div class="lcon">
+      <div class="ltag">GAME DEVELOPER TEAM MATCHING</div>
+      <h1 class="ltitle"><span class="tc">함께</span> 만드는<br/><span class="tp">인디게임</span></h1>
+      <p class="lsub">게임을 혼자 만들지 마세요. 개발자, 아티스트, 기획자, 사운드 디자이너와 팀을 이루세요.</p>
+      <div class="lbtns"><button class="btn btn-cy" onclick="go('register')">▶ 지금 시작하기</button><button class="btn btn-pk" onclick="go('login')">로그인</button></div>
+    </div>
+  </section>
+  <section class="psec"><div style="text-align:center"><h2 class="stitle">모집 포지션</h2><p class="ssub">어떤 역할로 참여하시나요?</p></div>
+    <div class="pgrid">
+      <div class="pcard" data-pos="dev" onclick="go('register')"><div class="pico">💻</div><div class="pname" style="color:var(--cy)">개발자/프로그래머</div><div class="pdesc">Unity · Unreal · Godot 등 게임 엔진 개발</div></div>
+      <div class="pcard" data-pos="art" onclick="go('register')"><div class="pico">🎨</div><div class="pname" style="color:var(--pk)">아티스트/디자이너</div><div class="pdesc">픽셀아트 · 3D모델링 · 애니메이션 · UI</div></div>
+      <div class="pcard" data-pos="plan" onclick="go('register')"><div class="pico">📋</div><div class="pname" style="color:var(--gn)">기획자/PD</div><div class="pdesc">레벨 디자인 · 게임 기획 · 나러티브</div></div>
+      <div class="pcard" data-pos="sound" onclick="go('register')"><div class="pico">🎵</div><div class="pname" style="color:var(--yw)">사운드 디자이너</div><div class="pdesc">BGM · 효과음 · 오디오 엔지니어링</div></div>
+    </div>
+  </section>
+</div>
+<!-- LOGIN -->
+<div id="v-login" class="view"><div class="awrap"><div class="abox">
+  <div class="atitle">// LOGIN</div>
+  <div class="anote">테스트 계정: <code>jinhoon@demo.com</code> / <code>demo123</code></div>
+  <div class="fg"><label class="fl">이메일</label><input id="li-e" class="fi" type="email" placeholder="email@example.com"/></div>
+  <div class="fg"><label class="fl">비밀번호</label><input id="li-p" class="fi" type="password" placeholder="••••••••"/><span id="li-err" class="ferr hidden"></span></div>
+  <button class="btn btn-cy btn-full" onclick="doLogin()">▶ 로그인</button>
+  <div class="afooter">계정이 없으신가요? <a onclick="go('register')">회원가입</a></div>
+</div></div></div>
+<!-- REGISTER -->
+<div id="v-register" class="view"><div class="awrap" style="padding:3rem 6%"><div class="abox" style="max-width:500px">
+  <div class="atitle">// REGISTER</div>
+  <div class="fg"><label class="fl">닉네임 *</label><input id="rg-n" class="fi" type="text" maxlength="20" placeholder="게임 개발자 닉네임"/></div>
+  <div class="fg"><label class="fl">이메일 *</label><input id="rg-e" class="fi" type="email" placeholder="email@example.com"/></div>
+  <div class="fg"><label class="fl">비밀번호 * (6자 이상)</label><input id="rg-p" class="fi" type="password" placeholder="••••••••"/></div>
+  <div class="fg"><label class="fl">포지션 *</label>
+    <div class="psel" id="rg-psel">
+      <div class="popt" data-pos="dev" onclick="selPos('dev','rg')"><span class="oi">💻</span><span class="on">개발자/프로그래머</span></div>
+      <div class="popt" data-pos="art" onclick="selPos('art','rg')"><span class="oi">🎨</span><span class="on">아티스트/디자이너</span></div>
+      <div class="popt" data-pos="plan" onclick="selPos('plan','rg')"><span class="oi">📋</span><span class="on">기획자/PD</span></div>
+      <div class="popt" data-pos="sound" onclick="selPos('sound','rg')"><span class="oi">🎵</span><span class="on">사운드 디자이너</span></div>
+    </div><input type="hidden" id="rg-pos"/>
+  </div>
+  <div class="fg"><label class="fl">스킬 (쉼표 구분)</label><input id="rg-sk" class="fi" type="text" placeholder="예: Unity, C#, 픽셀아트"/></div>
+  <div class="fg"><label class="fl">자기소개</label><textarea id="rg-bio" class="fta" placeholder="게임 경력, 제작 경험 등 자유롭게 소개해 주세요."></textarea></div>
+  <span id="rg-err" class="ferr hidden" style="display:block;margin-bottom:.9rem"></span>
+  <button class="btn btn-cy btn-full" onclick="doRegister()">▶ 회원가입</button>
+  <div class="afooter">이미 계정이 있으신가요? <a onclick="go('login')">로그인</a></div>
+</div></div></div>
+<!-- DASHBOARD -->
+<div id="v-dashboard" class="view"><div class="swrap">
+  <div class="sh"><p class="spre">dashboard</p><h2 class="stitle" style="color:var(--cy)">팀원 찾기</h2><p class="ssub" style="margin-bottom:0">같이 게임을 만들 팀원을 찾아보세요</p></div>
+  <div id="rec-sec" class="rec-sec hidden"><div class="rec-label">추천 팀원</div><div class="rec-row" id="rec-row"></div></div>
+  <div class="ftabs" id="ftabs">
+    <button class="ft on" data-f="all" onclick="setF('all')">전체</button>
+    <button class="ft" data-f="dev" onclick="setF('dev')">💻 개발자</button>
+    <button class="ft" data-f="art" onclick="setF('art')">🎨 아티스트</button>
+    <button class="ft" data-f="plan" onclick="setF('plan')">📋 기획자</button>
+    <button class="ft" data-f="sound" onclick="setF('sound')">🎵 사운드</button>
+  </div>
+  <input id="skill-search" class="fi ssearch" type="text" placeholder="🔍  스킬 검색 (예: Unity, 픽셀아트)" oninput="onSkillSearch(this.value)"/>
+  <div class="ugrid" id="ugrid"></div>
+</div></div>
+<!-- MY PROFILE -->
+<div id="v-myprofile" class="view"><div class="swrap" style="max-width:660px;margin:0 auto">
+  <div class="sh"><p class="spre">my profile</p><h2 class="stitle" style="color:var(--cy)">내 프로필</h2></div>
+  <div id="comp-block" class="comp-wrap"></div>
+  <div class="fg"><label class="fl">닉네임</label><input id="p-n" class="fi" type="text" maxlength="20"/></div>
+  <div class="fg"><label class="fl">포지션</label>
+    <div class="psel" id="p-psel">
+      <div class="popt" data-pos="dev" onclick="selPos('dev','p')"><span class="oi">💻</span><span class="on">개발자/프로그래머</span></div>
+      <div class="popt" data-pos="art" onclick="selPos('art','p')"><span class="oi">🎨</span><span class="on">아티스트/디자이너</span></div>
+      <div class="popt" data-pos="plan" onclick="selPos('plan','p')"><span class="oi">📋</span><span class="on">기획자/PD</span></div>
+      <div class="popt" data-pos="sound" onclick="selPos('sound','p')"><span class="oi">🎵</span><span class="on">사운드 디자이너</span></div>
+    </div><input type="hidden" id="p-pos"/>
+  </div>
+  <div class="fg"><label class="fl">스킬 (쉼표 구분)</label><input id="p-sk" class="fi" type="text"/></div>
+  <div class="fg"><label class="fl">자기소개</label><textarea id="p-bio" class="fta"></textarea></div>
+  <div class="fg"><label class="fl">포트폴리오 URL</label><input id="p-port" class="fi" type="url" placeholder="https://..."/></div>
+  <div class="fg"><label class="fl">찾는 포지션</label>
+    <div class="lkgrid" id="p-look">
+      <div class="lkopt" data-pos="dev" onclick="togLook('dev')"><span>💻</span> 개발자/프로그래머</div>
+      <div class="lkopt" data-pos="art" onclick="togLook('art')"><span>🎨</span> 아티스트/디자이너</div>
+      <div class="lkopt" data-pos="plan" onclick="togLook('plan')"><span>📋</span> 기획자/PD</div>
+      <div class="lkopt" data-pos="sound" onclick="togLook('sound')"><span>🎵</span> 사운드 디자이너</div>
+    </div>
+  </div>
+  <div class="fg"><label class="fl">선호 게임 장르</label><div class="ggrid" id="p-genres"></div></div>
+  <div class="fg"><label class="fl">Discord / SNS</label><input id="p-contact" class="fi" type="text" placeholder="Discord: username#1234"/></div>
+  <button class="btn btn-cy" onclick="saveProfile()">▶ 저장하기</button>
+</div></div>
+<!-- USER DETAIL -->
+<div id="v-userdetail" class="view"><div class="dwrap">
+  <button class="btn btn-gh btn-sm" onclick="go('dashboard')" style="margin-bottom:1.4rem">← 목록으로</button>
+  <div id="dbody"></div>
+</div></div>
+<!-- REQUESTS -->
+<div id="v-requests" class="view"><div class="swrap">
+  <div class="sh"><p class="spre">requests</p><h2 class="stitle" style="color:var(--cy)">요청함</h2></div>
+  <div class="rtabs"><button class="rtab on" id="rt-recv" onclick="switchRT('recv')">받은 요청</button><button class="rtab" id="rt-sent" onclick="switchRT('sent')">보낸 요청</button></div>
+  <div class="rlist" id="rlist"></div>
+</div></div>
+<!-- TEAMMATES -->
+<div id="v-teammates" class="view"><div class="swrap">
+  <div class="sh"><p class="spre">my team</p><h2 class="stitle" style="color:var(--gn)">내 팀원</h2><p class="ssub" style="margin-bottom:0">수락된 연결 팀원 목록입니다</p></div>
+  <div class="ugrid" id="tmgrid"></div>
+</div></div>
+<!-- PROJECTS -->
+<div id="v-projects" class="view"><div class="swrap">
+  <div class="sh" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem">
+    <div><p class="spre">projects</p><h2 class="stitle" style="color:var(--pk)">프로젝트 모집</h2><p class="ssub" style="margin-bottom:0">팀원을 모집 중인 프로젝트입니다</p></div>
+    <button class="btn btn-pk" id="proj-create-btn" onclick="openProjModal()" style="display:none">+ 프로젝트 등록</button>
+  </div>
+  <div class="ftabs" id="proj-ftabs">
+    <button class="ft on" data-f="all" onclick="setProjF('all')">전체</button>
+    <button class="ft" data-f="dev" onclick="setProjF('dev')">💻 개발자 모집</button>
+    <button class="ft" data-f="art" onclick="setProjF('art')">🎨 아티스트 모집</button>
+    <button class="ft" data-f="plan" onclick="setProjF('plan')">📋 기획자 모집</button>
+    <button class="ft" data-f="sound" onclick="setProjF('sound')">🎵 사운드 모집</button>
+  </div>
+  <div class="projgrid" id="projgrid"></div>
+</div></div>
+<!-- GAMEJAM -->
+<div id="v-gamejam" class="view"><div class="swrap">
+  <div class="sh" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem">
+    <div><p class="spre">game jam</p><h2 class="stitle" style="color:var(--yw)">게임잼</h2><p class="ssub" style="margin-bottom:0">진행 중이거나 예정된 게임잼을 확인하세요</p></div>
+    <button class="btn btn-pu" id="jam-create-btn" onclick="openJamModal()" style="display:none">+ 게임잼 등록</button>
+  </div>
+  <div class="jamgrid" id="jamgrid"></div>
+</div></div>
+<!-- FEED -->
+<div id="v-feed" class="view"><div class="swrap">
+  <div class="sh"><p class="spre">activity</p><h2 class="stitle" style="color:var(--pu)">활동 피드</h2><p class="ssub" style="margin-bottom:0">플랫폼의 최근 활동입니다</p></div>
+  <div class="flist" id="feedlist"></div>
+</div></div>
+<!-- BOOKMARKS -->
+<div id="v-bookmarks" class="view"><div class="swrap">
+  <div class="sh"><p class="spre">bookmarks</p><h2 class="stitle" style="color:var(--yw)">북마크</h2><p class="ssub" style="margin-bottom:0">관심 있는 팀원을 저장했어요</p></div>
+  <div class="ugrid" id="bmgrid"></div>
+</div></div>
+<!-- CHAT -->
+<div id="v-chat" class="view">
+  <div class="chat-layout">
+    <div class="chat-sidebar">
+      <div class="chat-sidebar-title">// 팀원 채팅</div>
+      <div id="chat-sidebar-list"></div>
+    </div>
+    <div class="chat-main">
+      <div class="chat-header" id="chat-header"><span style="color:var(--mut);font-size:.85rem">팀원을 선택하세요</span></div>
+      <div class="chat-msgs" id="chat-msgs"><div class="chat-empty"><p>팀원을 선택하면 채팅을 시작할 수 있어요</p></div></div>
+      <div class="chat-input"><input id="chat-inp" class="fi" type="text" placeholder="메시지 입력..." onkeydown="if(event.key==='Enter')sendMsg()"/><button class="btn btn-cy btn-sm" onclick="sendMsg()">전송</button></div>
+    </div>
+  </div>
+</div>
+</div><!-- #app -->
+
+<!-- REQUEST MODAL -->
+<div id="req-modal" class="mov hidden"><div class="mbox">
+  <div class="mtitle" id="req-mtitle">// 팀원 요청 보내기</div>
+  <div class="fg"><label class="fl">메시지 (선택)</label><textarea id="req-msg" class="fta" placeholder="간단한 소개와 함께하고 싶은 이유를 적어주세요."></textarea></div>
+  <div class="macts"><button class="btn btn-gh" onclick="closeAllModals()">취소</button><button class="btn btn-cy" onclick="confirmReq()">▶ 요청 보내기</button></div>
+</div></div>
+
+<!-- PROJECT MODAL -->
+<div id="proj-modal" class="mov hidden"><div class="mbox">
+  <div class="mtitle">// 프로젝트 등록</div>
+  <div class="fg"><label class="fl">프로젝트 이름 *</label><input id="pm-title" class="fi" type="text" placeholder="예: 픽셀 RPG — 라스트 던전"/></div>
+  <div class="fg"><label class="fl">설명</label><textarea id="pm-desc" class="fta" placeholder="어떤 게임인지, 어떤 팀원을 찾는지 설명해 주세요."></textarea></div>
+  <div class="fg"><label class="fl">장르</label><div class="chk-grid" id="pm-genres"></div></div>
+  <div class="fg"><label class="fl">모집 포지션</label>
+    <div class="chk-grid">
+      <div class="chk-opt" data-pos="dev" onclick="toggleChk(this)">💻 개발자</div>
+      <div class="chk-opt" data-pos="art" onclick="toggleChk(this)">🎨 아티스트</div>
+      <div class="chk-opt" data-pos="plan" onclick="toggleChk(this)">📋 기획자</div>
+      <div class="chk-opt" data-pos="sound" onclick="toggleChk(this)">🎵 사운드</div>
+    </div>
+  </div>
+  <div class="macts"><button class="btn btn-gh" onclick="closeAllModals()">취소</button><button class="btn btn-cy" onclick="saveProjModal()">▶ 등록하기</button></div>
+</div></div>
+
+<!-- GAMEJAM MODAL -->
+<div id="jam-modal" class="mov hidden"><div class="mbox">
+  <div class="mtitle">// 게임잼 등록</div>
+  <div class="fg"><label class="fl">게임잼 이름 *</label><input id="jm-title" class="fi" type="text" placeholder="예: GMTK Game Jam 2026"/></div>
+  <div class="fg"><label class="fl">테마</label><input id="jm-theme" class="fi" type="text" placeholder="예: 역할 반전"/></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div class="fg"><label class="fl">시작일</label><input id="jm-start" class="fi" type="date"/></div>
+    <div class="fg"><label class="fl">종료일</label><input id="jm-end" class="fi" type="date"/></div>
+  </div>
+  <div class="fg"><label class="fl">URL</label><input id="jm-url" class="fi" type="url" placeholder="https://itch.io/jam/..."/></div>
+  <div class="fg"><label class="fl">설명</label><textarea id="jm-desc" class="fta" placeholder="게임잼 정보와 팀원 모집 내용을 적어주세요."></textarea></div>
+  <div class="macts"><button class="btn btn-gh" onclick="closeAllModals()">취소</button><button class="btn btn-cy" onclick="saveJamModal()">▶ 등록하기</button></div>
+</div></div>
+
+<script>
+const GENRES=['RPG','플랫포머','퍼즐','호러','어드벤처','슈팅','시뮬레이션','전략','인디','액션'];
+const PL={dev:'개발자/프로그래머',art:'아티스트/디자이너',plan:'기획자/PD',sound:'사운드 디자이너'};
+const PI={dev:'💻',art:'🎨',plan:'📋',sound:'🎵'};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const init=n=>n?n[0].toUpperCase():'?';
+const ago=s=>{const d=(Date.now()-new Date(s))/1000;if(d<60)return '방금 전';if(d<3600)return `${~~(d/60)}분 전`;if(d<86400)return `${~~(d/3600)}시간 전`;return `${~~(d/86400)}일 전`;};
+const ck=(a,b)=>[a,b].sort().join('_');
+
+const DB={
+  users:()=>JSON.parse(localStorage.getItem('gm_u')||'[]'),
+  saveU:v=>localStorage.setItem('gm_u',JSON.stringify(v)),
+  reqs:()=>JSON.parse(localStorage.getItem('gm_r')||'[]'),
+  saveR:v=>localStorage.setItem('gm_r',JSON.stringify(v)),
+  sid:()=>localStorage.getItem('gm_s'),
+  setSid:id=>localStorage.setItem('gm_s',id),
+  clearSid:()=>localStorage.removeItem('gm_s'),
+  me:()=>{const id=DB.sid();return id?DB.users().find(u=>u.id===id)||null:null;},
+  projects:()=>JSON.parse(localStorage.getItem('gm_proj')||'[]'),
+  saveProj:v=>localStorage.setItem('gm_proj',JSON.stringify(v)),
+  jams:()=>JSON.parse(localStorage.getItem('gm_jams')||'[]'),
+  saveJams:v=>localStorage.setItem('gm_jams',JSON.stringify(v)),
+  feed:()=>JSON.parse(localStorage.getItem('gm_feed')||'[]'),
+  saveFeed:v=>localStorage.setItem('gm_feed',JSON.stringify(v)),
+  addFeed:(type,userId,data)=>{const f=DB.feed();f.unshift({id:uid(),type,userId,data,at:new Date().toISOString()});DB.saveFeed(f.slice(0,100));},
+  msgs:k=>JSON.parse(localStorage.getItem('gm_msg_'+k)||'[]'),
+  addMsg:(k,msg)=>{const m=DB.msgs(k);m.push(msg);localStorage.setItem('gm_msg_'+k,JSON.stringify(m));},
+  seen:()=>JSON.parse(localStorage.getItem('gm_seen')||'{}'),
+  updateSeen:(id)=>{const s=DB.seen();s[id]=new Date().toISOString();localStorage.setItem('gm_seen',JSON.stringify(s));}
+};
+
+const ST={filter:'all',rTab:'recv',toUid:null,viewUid:null,chatWith:null,pPos:'',pLook:[],pGenres:[],projFilter:'all'};
+
+function toast(msg,type='info'){const el=document.createElement('div');el.className=`toast t-${type}`;el.textContent=msg;document.getElementById('tc').appendChild(el);setTimeout(()=>el.remove(),3200);}
+
+function isConn(a,b){return DB.reqs().some(r=>(r.from===a&&r.to===b||r.from===b&&r.to===a)&&r.status==='accepted');}
+function hasPending(a,b){return DB.reqs().some(r=>r.from===a&&r.to===b&&r.status==='pending');}
+
+function calcCompletion(u){let s=20;if(u.bio&&u.bio.length>10)s+=20;if(u.skills&&u.skills.length)s+=15;if(u.portfolio)s+=15;if(u.lookingFor&&u.lookingFor.length)s+=10;if(u.contact)s+=10;if(u.genres&&u.genres.length)s+=10;return Math.min(s,100);}
+
+function getLastSeen(userId){const s=DB.seen();return s[userId]?ago(s[userId]):null;}
+
+function go(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  const el=document.getElementById('v-'+v);if(el)el.classList.add('active');
+  const me=DB.me();
+  document.getElementById('nav-g').classList.toggle('hidden',!!me);
+  document.getElementById('nav-a').classList.toggle('hidden',!me);
+  if(me){DB.updateSeen(me.id);}
+  if(v==='dashboard')renderDash();
+  if(v==='myprofile')renderProf();
+  if(v==='requests')renderReqs();
+  if(v==='userdetail'&&ST.viewUid)renderDetail(ST.viewUid);
+  if(v==='teammates')renderTeammates();
+  if(v==='projects')renderProjects();
+  if(v==='gamejam')renderJams();
+  if(v==='feed')renderFeed();
+  if(v==='bookmarks')renderBookmarks();
+  if(v==='chat')renderChatLayout();
+  if(me){const n=DB.reqs().filter(r=>r.to===me.id&&r.status==='pending').length;const b=document.getElementById('rbadge');b.textContent=n;b.classList.toggle('hidden',n===0);}
+  // show create buttons if logged in
+  const pb=document.getElementById('proj-create-btn');if(pb)pb.style.display=me?'inline-flex':'none';
+  const jb=document.getElementById('jam-create-btn');if(jb)jb.style.display=me?'inline-flex':'none';
+}
+
+function viewUser(id){ST.viewUid=id;go('userdetail');}
+function openChat(userId){ST.chatWith=userId;go('chat');}
+
+// AUTH
+function selPos(pos,ctx){
+  const pfx=ctx==='rg'?'rg':'p';
+  document.getElementById(pfx+'-pos').value=pos;
+  document.querySelectorAll('#'+pfx+'-psel .popt').forEach(e=>e.classList.toggle('sel',e.dataset.pos===pos));
+  if(ctx==='p')ST.pPos=pos;else ST.rgPos=pos;
+}
+function doLogin(){
+  const e=document.getElementById('li-e').value.trim(),p=document.getElementById('li-p').value,err=document.getElementById('li-err');
+  err.classList.add('hidden');
+  const u=DB.users().find(u=>u.email===e&&u.password===p);
+  if(!u){err.textContent='이메일 또는 비밀번호가 올바르지 않습니다.';err.classList.remove('hidden');return;}
+  DB.setSid(u.id);toast('로그인되었습니다!','ok');go('dashboard');
+}
+function doRegister(){
+  const n=document.getElementById('rg-n').value.trim(),e=document.getElementById('rg-e').value.trim(),p=document.getElementById('rg-p').value,pos=document.getElementById('rg-pos').value,sk=document.getElementById('rg-sk').value,bio=document.getElementById('rg-bio').value.trim(),err=document.getElementById('rg-err');
+  err.classList.add('hidden');
+  if(!n){showE(err,'닉네임을 입력해주세요.');return;}if(!e){showE(err,'이메일을 입력해주세요.');return;}if(p.length<6){showE(err,'비밀번호는 6자 이상이어야 합니다.');return;}if(!pos){showE(err,'포지션을 선택해주세요.');return;}
+  const users=DB.users();if(users.find(u=>u.email===e)){showE(err,'이미 사용 중인 이메일입니다.');return;}
+  const nu={id:uid(),username:n,email:e,password:p,position:pos,skills:sk?sk.split(',').map(s=>s.trim()).filter(Boolean):[],bio,portfolio:'',lookingFor:[],contact:'',genres:[],bookmarks:[],createdAt:new Date().toISOString()};
+  users.push(nu);DB.saveU(users);DB.setSid(nu.id);DB.addFeed('join',nu.id,{});
+  toast('회원가입 완료! 환영합니다 🎮','ok');go('myprofile');
+}
+function doLogout(){DB.clearSid();toast('로그아웃되었습니다.','info');go('landing');}
+function showE(el,msg){el.textContent=msg;el.classList.remove('hidden');}
+
+// DASHBOARD
+function setF(f){ST.filter=f;document.querySelectorAll('#ftabs .ft').forEach(t=>t.classList.toggle('on',t.dataset.f===f));renderCards();}
+function onSkillSearch(v){ST.skillSearch=v.toLowerCase();renderCards();}
+function renderDash(){renderRec();renderCards();}
+function renderRec(){
+  const me=DB.me();if(!me||!me.lookingFor||!me.lookingFor.length){document.getElementById('rec-sec').classList.add('hidden');return;}
+  const users=DB.users().filter(u=>u.id!==me.id);
+  const recs=users.filter(u=>me.lookingFor.includes(u.position)&&!isConn(me.id,u.id)&&!hasPending(me.id,u.id)).slice(0,5);
+  if(!recs.length){document.getElementById('rec-sec').classList.add('hidden');return;}
+  document.getElementById('rec-sec').classList.remove('hidden');
+  document.getElementById('rec-row').innerHTML=recs.map(u=>`
+    <div class="rec-chip" data-pos="${u.position}" onclick="viewUser('${u.id}')">
+      <div class="cav" data-pos="${u.position}" style="width:38px;height:38px;font-size:.8rem">${init(u.username)}</div>
+      <div><div class="cuname" style="font-size:.85rem">${u.username}</div><div class="pbadge" data-pos="${u.position}" style="font-size:.6rem">${PI[u.position]} ${PL[u.position]}</div></div>
+    </div>`).join('');
+}
+function renderCards(){
+  const me=DB.me();const all=DB.users().filter(u=>u.id!==(me?.id||''));const rs=DB.reqs();
+  let list=ST.filter==='all'?all:all.filter(u=>u.position===ST.filter);
+  if(ST.skillSearch)list=list.filter(u=>(u.skills||[]).some(s=>s.toLowerCase().includes(ST.skillSearch)));
+  const grid=document.getElementById('ugrid');
+  if(!list.length){grid.innerHTML=`<div class="empty"><div class="empty-ico">👾</div><p>팀원이 없어요.<br/>첫 번째로 등록해 보세요!</p></div>`;return;}
+  grid.innerHTML=list.map(u=>renderUserCard(u,me,rs,false)).join('');
+}
+function renderUserCard(u,me,rs,isTeammate){
+  const sent=rs.find(r=>r.from===me?.id&&r.to===u.id);const recv=rs.find(r=>r.from===u.id&&r.to===me?.id);
+  const conn=sent?.status==='accepted'||recv?.status==='accepted';const pend=sent?.status==='pending';
+  const isBm=me&&(me.bookmarks||[]).includes(u.id);const ls=getLastSeen(u.id);
+  let act=!me?`<button class="btn btn-sm btn-gh" onclick="go('login')">로그인 필요</button>`
+    :conn?`<span class="conn-b">✓ 연결됨</span>`
+    :pend?`<span class="pend-b">⏳ 요청 중</span>`
+    :`<button class="btn btn-sm btn-cy" onclick="openModal('${u.id}')">팀원 요청</button>`;
+  const chatBtn=me&&conn?`<button class="btn btn-sm btn-gh" onclick="openChat('${u.id}')">💬 채팅</button>`:'';
+  const tags=(u.skills||[]).slice(0,4).map(s=>`<span class="stag">${s}</span>`).join('');
+  const bm=me&&me.id!==u.id?`<button class="bm-btn" onclick="event.stopPropagation();toggleBm('${u.id}')" title="북마크">${isBm?'★':'☆'}</button>`:'';
+  const genreHtml=(u.genres||[]).slice(0,2).map(g=>`<span class="genre-chip" style="color:var(--pu);border-color:rgba(191,95,255,.4)">${g}</span>`).join('');
+  return `<div class="ucard" data-pos="${u.position}">
+    <div class="ctop"><div class="ctop-left"><div class="cav" data-pos="${u.position}">${init(u.username)}</div>
+      <div><div class="cuname">${u.username}</div><span class="pbadge" data-pos="${u.position}">${PI[u.position]} ${PL[u.position]}</span>${genreHtml}${ls?`<div class="lastseen">🕐 ${ls} 접속</div>`:''}</div>
+    </div>${bm}</div>
+    ${u.bio?`<div class="cbio">${u.bio}</div>`:''}
+    <div class="cskills">${tags}</div>
+    <div class="cacts">${act}${chatBtn}<button class="btn btn-sm btn-gh" onclick="viewUser('${u.id}')">프로필 보기</button></div>
+  </div>`;
+}
+
+// BOOKMARK
+function toggleBm(userId){
+  const me=DB.me();if(!me)return;
+  const users=DB.users();const i=users.findIndex(u=>u.id===me.id);if(i===-1)return;
+  const bms=users[i].bookmarks||[];const bi=bms.indexOf(userId);
+  if(bi===-1)bms.push(userId);else bms.splice(bi,1);
+  users[i].bookmarks=bms;DB.saveU(users);
+  const view=document.getElementById('v-dashboard').classList.contains('active')?'dashboard':document.getElementById('v-bookmarks').classList.contains('active')?'bookmarks':'userdetail';
+  if(view==='dashboard')renderCards();else if(view==='bookmarks')renderBookmarks();else renderDetail(userId);
+  toast(bi===-1?'북마크에 추가했습니다.':'북마크에서 삭제했습니다.','info');
+}
+
+// MY PROFILE
+function togLook(pos){const i=ST.pLook.indexOf(pos);if(i===-1)ST.pLook.push(pos);else ST.pLook.splice(i,1);document.querySelectorAll('#p-look .lkopt').forEach(e=>e.classList.toggle('sel',ST.pLook.includes(e.dataset.pos)));}
+function togGenre(g){const i=ST.pGenres.indexOf(g);if(i===-1)ST.pGenres.push(g);else ST.pGenres.splice(i,1);document.querySelectorAll('#p-genres .gopt').forEach(e=>e.classList.toggle('sel',ST.pGenres.includes(e.textContent)));}
+function renderProf(){
+  const me=DB.me();if(!me){go('login');return;}
+  ST.pPos=me.position||'';ST.pLook=me.lookingFor?[...me.lookingFor]:[];ST.pGenres=me.genres?[...me.genres]:[];
+  document.getElementById('p-n').value=me.username||'';
+  document.getElementById('p-sk').value=(me.skills||[]).join(', ');
+  document.getElementById('p-bio').value=me.bio||'';
+  document.getElementById('p-port').value=me.portfolio||'';
+  document.getElementById('p-contact').value=me.contact||'';
+  document.getElementById('p-pos').value=ST.pPos;
+  document.querySelectorAll('#p-psel .popt').forEach(e=>e.classList.toggle('sel',e.dataset.pos===ST.pPos));
+  document.querySelectorAll('#p-look .lkopt').forEach(e=>e.classList.toggle('sel',ST.pLook.includes(e.dataset.pos)));
+  const gg=document.getElementById('p-genres');
+  gg.innerHTML=GENRES.map(g=>`<div class="gopt${ST.pGenres.includes(g)?' sel':''}" onclick="togGenre('${g}')">${g}</div>`).join('');
+  const pct=calcCompletion(me);const missing=[];
+  if(!me.bio||me.bio.length<10)missing.push('자기소개');if(!me.skills||!me.skills.length)missing.push('스킬');
+  if(!me.portfolio)missing.push('포트폴리오');if(!me.lookingFor||!me.lookingFor.length)missing.push('찾는 포지션');
+  if(!me.contact)missing.push('연락처');if(!me.genres||!me.genres.length)missing.push('선호 장르');
+  document.getElementById('comp-block').innerHTML=`<div class="comp-row"><span class="comp-label">프로필 완성도</span><span class="comp-pct">${pct}%</span></div><div class="comp-bar"><div class="comp-fill" style="width:${pct}%"></div></div>${missing.length?`<div class="comp-hint">미완성 항목: ${missing.join(' · ')}</div>`:'<div class="comp-hint" style="color:var(--gn)">✓ 프로필이 완성되었습니다!</div>'}`;
+}
+function saveProfile(){
+  const me=DB.me();if(!me)return;
+  const users=DB.users();const i=users.findIndex(u=>u.id===me.id);if(i===-1)return;
+  users[i].username=document.getElementById('p-n').value.trim()||me.username;
+  users[i].position=ST.pPos||me.position;
+  users[i].skills=document.getElementById('p-sk').value.split(',').map(s=>s.trim()).filter(Boolean);
+  users[i].bio=document.getElementById('p-bio').value.trim();
+  users[i].portfolio=document.getElementById('p-port').value.trim();
+  users[i].contact=document.getElementById('p-contact').value.trim();
+  users[i].lookingFor=ST.pLook;users[i].genres=ST.pGenres;
+  DB.saveU(users);toast('프로필이 저장되었습니다!','ok');renderProf();
+}
+
+// USER DETAIL
+function renderDetail(uid2){
+  const u=DB.users().find(u=>u.id===uid2);const me=DB.me();const rs=DB.reqs();
+  if(!u){go('dashboard');return;}
+  const sent=rs.find(r=>r.from===me?.id&&r.to===u.id);const recv=rs.find(r=>r.from===u.id&&r.to===me?.id);
+  const conn=sent?.status==='accepted'||recv?.status==='accepted';const pend=sent?.status==='pending';
+  const isBm=me&&(me.bookmarks||[]).includes(u.id);const ls=getLastSeen(u.id);
+  let act=!me?`<button class="btn btn-gh" onclick="go('login')">로그인 필요</button>`:me.id===u.id?`<button class="btn btn-cy" onclick="go('myprofile')">프로필 수정</button>`:conn?`<span class="conn-b" style="font-size:.85rem;padding:.44rem .9rem">✓ 연결된 팀원</span>`:pend?`<span class="pend-b" style="font-size:.85rem;padding:.44rem .9rem">⏳ 요청 전송됨</span>`:`<button class="btn btn-cy" onclick="openModal('${u.id}')">팀원 요청 보내기</button>`;
+  const chatBtn=me&&me.id!==u.id&&conn?`<button class="btn btn-gh" onclick="openChat('${u.id}')">💬 채팅하기</button>`:'';
+  const bmBtn=me&&me.id!==u.id?`<button class="btn btn-gh" onclick="toggleBm('${u.id}')">${isBm?'★ 북마크 해제':'☆ 북마크'}</button>`:'';
+  const lookH=(u.lookingFor||[]).map(p=>`<span class="dsk">${PI[p]} ${PL[p]}</span>`).join('');
+  const genreH=(u.genres||[]).map(g=>`<span class="dsk" style="color:var(--pu)">${g}</span>`).join('');
+  document.getElementById('dbody').innerHTML=`
+    <div class="dhead"><div class="dav" data-pos="${u.position}">${init(u.username)}</div>
+      <div><div class="dname">${u.username}</div><span class="pbadge" data-pos="${u.position}">${PI[u.position]} ${PL[u.position]}</span>
+        <div class="demail">${u.email}${ls?` · 🕐 ${ls} 접속`:''}</div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem">${act}${chatBtn}${bmBtn}</div>
+      </div>
+    </div>
+    ${u.bio?`<div class="dsec"><h4>// 자기소개</h4><p>${u.bio}</p></div>`:''}
+    ${u.skills?.length?`<div class="dsec"><h4>// 스킬</h4><div class="dskills">${u.skills.map(s=>`<span class="dsk">${s}</span>`).join('')}</div></div>`:''}
+    ${u.lookingFor?.length?`<div class="dsec"><h4>// 찾는 포지션</h4><div class="dskills">${lookH}</div></div>`:''}
+    ${u.genres?.length?`<div class="dsec"><h4>// 선호 장르</h4><div class="dskills">${genreH}</div></div>`:''}
+    ${u.portfolio?`<div class="dsec"><h4>// 포트폴리오</h4><a href="${u.portfolio}" target="_blank" rel="noopener" style="color:var(--cy);font-size:.9rem">${u.portfolio}</a></div>`:''}
+    ${u.contact?`<div class="dsec"><h4>// 연락처</h4><p>${u.contact}</p></div>`:''}
+    <div class="dsec"><h4>// 가입일</h4><p style="font-size:.82rem">${new Date(u.createdAt).toLocaleDateString('ko-KR')}</p></div>`;
+}
+
+// REQUESTS
+function switchRT(t){ST.rTab=t;document.getElementById('rt-recv').classList.toggle('on',t==='recv');document.getElementById('rt-sent').classList.toggle('on',t==='sent');renderReqs();}
+function renderReqs(){
+  const me=DB.me();if(!me)return;
+  const rs=DB.reqs();const us=DB.users();
+  const items=rs.filter(r=>ST.rTab==='recv'?r.to===me.id:r.from===me.id).sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const list=document.getElementById('rlist');
+  if(!items.length){list.innerHTML=`<div class="empty"><div class="empty-ico">📭</div><p>요청이 없습니다.</p></div>`;return;}
+  list.innerHTML=items.map(r=>{
+    const oid=ST.rTab==='recv'?r.from:r.to;const o=us.find(u=>u.id===oid);if(!o)return '';
+    let act=ST.rTab==='recv'&&r.status==='pending'
+      ?`<button class="btn btn-sm btn-ok" onclick="answerReq('${r.id}','accepted')">수락</button><button class="btn btn-sm btn-dn" onclick="answerReq('${r.id}','rejected')">거절</button>`
+      :`<span class="stbadge st-${r.status[0]}">${r.status==='pending'?'⏳ 대기 중':r.status==='accepted'?'✓ 수락됨':'✗ 거절됨'}</span>`;
+    return `<div class="rcard"><div class="cav" data-pos="${o.position}" style="width:42px;height:42px;font-size:.85rem;flex-shrink:0">${init(o.username)}</div>
+      <div class="rinfo"><div class="runame">${o.username} <span class="pbadge" data-pos="${o.position}" style="font-size:.62rem">${PI[o.position]} ${PL[o.position]}</span></div>
+      ${r.msg?`<div class="rmsg">"${r.msg}"</div>`:''}<div class="rtime">${ago(r.at)}</div></div>
+      <div class="ract">${act}</div></div>`;
+  }).join('');
+}
+function answerReq(rid,status){
+  const rs=DB.reqs();const i=rs.findIndex(r=>r.id===rid);if(i===-1)return;
+  rs[i].status=status;DB.saveR(rs);
+  if(status==='accepted'){const r=rs[i];DB.addFeed('connect',r.from,{toId:r.to});}
+  toast(status==='accepted'?'요청을 수락했습니다! 🎉':'요청을 거절했습니다.','ok');renderReqs();go('requests');
+}
+
+// TEAMMATES
+function renderTeammates(){
+  const me=DB.me();if(!me){go('login');return;}
+  const rs=DB.reqs();const us=DB.users();
+  const conn=us.filter(u=>isConn(me.id,u.id));
+  const grid=document.getElementById('tmgrid');
+  if(!conn.length){grid.innerHTML=`<div class="empty"><div class="empty-ico">👥</div><p>아직 연결된 팀원이 없어요.<br/>팀원 찾기에서 요청을 보내보세요!</p></div>`;return;}
+  grid.innerHTML=conn.map(u=>renderUserCard(u,me,rs,true)).join('');
+}
+
+// PROJECTS
+function setProjF(f){ST.projFilter=f;document.querySelectorAll('#proj-ftabs .ft').forEach(t=>t.classList.toggle('on',t.dataset.f===f));renderProjects();}
+function renderProjects(){
+  const me=DB.me();let projs=DB.projects();
+  if(ST.projFilter!=='all')projs=projs.filter(p=>(p.positions||[]).includes(ST.projFilter));
+  const us=DB.users();const grid=document.getElementById('projgrid');
+  if(!projs.length){grid.innerHTML=`<div class="empty"><div class="empty-ico">📁</div><p>프로젝트가 없어요.<br/>${me?'첫 번째 프로젝트를 등록해 보세요!':'로그인 후 등록할 수 있어요.'}</p></div>`;return;}
+  grid.innerHTML=projs.sort((a,b)=>new Date(b.at)-new Date(a.at)).map(p=>{
+    const author=us.find(u=>u.id===p.authorId);
+    const gBadges=(p.genres||[]).map(g=>`<span class="proj-badge genre">${g}</span>`).join('');
+    const pBadges=(p.positions||[]).map(pos=>`<span class="proj-badge pos" data-pos="${pos}">${PI[pos]} ${PL[pos]} 모집</span>`).join('');
+    return `<div class="projcard">
+      <div class="proj-badges">${gBadges}</div>
+      <div class="projcard-title">${p.title}</div>
+      <div class="projcard-author">by ${author?author.username:'알 수 없음'} ${author?`<span class="pbadge" data-pos="${author.position}" style="font-size:.6rem">${PI[author.position]}</span>`:''}</div>
+      <div class="projcard-desc">${p.desc||''}</div>
+      <div class="proj-badges">${pBadges}</div>
+      <div class="proj-acts">${me&&p.authorId!==me.id?`<button class="btn btn-sm btn-cy" onclick="openModal('${p.authorId}')">팀원 지원하기</button>`:''}
+        <button class="btn btn-sm btn-gh" onclick="viewUser('${p.authorId||''}')">작성자 보기</button>
+        ${me&&p.authorId===me.id?`<button class="btn btn-sm btn-dn" onclick="deleteProj('${p.id}')">삭제</button>`:''}
+      </div></div>`;
+  }).join('');
+}
+function deleteProj(id){if(!confirm('프로젝트를 삭제할까요?'))return;DB.saveProj(DB.projects().filter(p=>p.id!==id));renderProjects();toast('삭제되었습니다.','info');}
+
+// GAME JAMS
+function renderJams(){
+  const jams=DB.jams();const us=DB.users();const grid=document.getElementById('jamgrid');
+  if(!jams.length){grid.innerHTML=`<div class="empty"><div class="empty-ico">🎮</div><p>등록된 게임잼이 없어요.</p></div>`;return;}
+  grid.innerHTML=jams.sort((a,b)=>new Date(b.at)-new Date(a.at)).map(j=>{
+    const author=us.find(u=>u.id===j.authorId);const me=DB.me();
+    return `<div class="jamcard">
+      ${j.theme?`<div class="jam-theme">THEME: ${j.theme}</div>`:''}
+      <div class="jamcard-title">${j.title}</div>
+      ${j.startDate?`<div class="jam-dates">📅 ${j.startDate} ~ ${j.endDate||'?'}</div>`:''}
+      <div class="jam-desc">${j.desc||''}</div>
+      ${j.url?`<a href="${j.url}" target="_blank" rel="noopener" class="jam-link">🔗 참가하기</a>`:''}
+      <div style="font-size:.76rem;color:var(--mut)">등록: ${author?author.username:'알 수 없음'}</div>
+      ${me&&j.authorId===me.id?`<button class="btn btn-sm btn-dn" onclick="deleteJam('${j.id}')">삭제</button>`:''}
+    </div>`;
+  }).join('');
+}
+function deleteJam(id){if(!confirm('게임잼을 삭제할까요?'))return;DB.saveJams(DB.jams().filter(j=>j.id!==id));renderJams();toast('삭제되었습니다.','info');}
+
+// FEED
+function renderFeed(){
+  const feed=DB.feed();const us=DB.users();const list=document.getElementById('feedlist');
+  if(!feed.length){list.innerHTML=`<div class="empty"><div class="empty-ico">📰</div><p>활동 내역이 없습니다.</p></div>`;return;}
+  list.innerHTML=feed.map(f=>{
+    const u=us.find(u=>u.id===f.userId);const uname=u?u.username:'알 수 없음';
+    let icon='',txt='';
+    if(f.type==='join'){icon='🎮';txt=`<strong>${uname}</strong>님이 <span>GameMatch에 합류했습니다.</span>`;}
+    else if(f.type==='project'){icon='📁';txt=`<strong>${uname}</strong>님이 프로젝트 <span>"${f.data.title}"</span>을 등록했습니다.`;}
+    else if(f.type==='jam'){icon='🎮';txt=`<strong>${uname}</strong>님이 게임잼 <span>"${f.data.title}"</span>을 등록했습니다.`;}
+    else if(f.type==='connect'){const u2=us.find(u=>u.id===f.data.toId);icon='🤝';txt=`<strong>${uname}</strong>님과 <strong>${u2?u2.username:'알 수 없음'}</strong>님이 팀원이 되었습니다.`;}
+    return `<div class="fitem"><div class="fitem-icon">${icon}</div><div class="fitem-text">${txt}</div><div class="fitem-time">${ago(f.at)}</div></div>`;
+  }).join('');
+}
+
+// BOOKMARKS
+function renderBookmarks(){
+  const me=DB.me();if(!me){go('login');return;}
+  const bms=me.bookmarks||[];const us=DB.users().filter(u=>bms.includes(u.id));const rs=DB.reqs();
+  const grid=document.getElementById('bmgrid');
+  if(!us.length){grid.innerHTML=`<div class="empty"><div class="empty-ico">🔖</div><p>북마크한 팀원이 없어요.<br/>팀원 카드의 ☆를 눌러 저장하세요!</p></div>`;return;}
+  grid.innerHTML=us.map(u=>renderUserCard(u,me,rs,false)).join('');
+}
+
+// CHAT
+function renderChatLayout(){
+  const me=DB.me();if(!me){go('login');return;}
+  const rs=DB.reqs();const us=DB.users();
+  const connUsers=us.filter(u=>isConn(me.id,u.id));
+  const sideEl=document.getElementById('chat-sidebar-list');
+  sideEl.innerHTML=connUsers.length?connUsers.map(u=>`
+    <div class="chat-user${ST.chatWith===u.id?' active':''}" onclick="ST.chatWith='${u.id}';renderChatLayout()">
+      <div class="cav" data-pos="${u.position}" style="width:36px;height:36px;font-size:.78rem">${init(u.username)}</div>
+      <div><div class="cuname">${u.username}</div><span class="pbadge" data-pos="${u.position}" style="font-size:.58rem">${PI[u.position]}</span></div>
+    </div>`).join('')
+    :`<div style="padding:1.5rem;color:var(--mut);font-size:.8rem;text-align:center">연결된 팀원이 없어요</div>`;
+  if(ST.chatWith){
+    const partner=us.find(u=>u.id===ST.chatWith);
+    document.getElementById('chat-header').innerHTML=partner?`<div class="cav" data-pos="${partner.position}" style="width:34px;height:34px;font-size:.75rem">${init(partner.username)}</div><div><div class="cuname">${partner.username}</div><span class="pbadge" data-pos="${partner.position}" style="font-size:.6rem">${PI[partner.position]} ${PL[partner.position]}</span></div>`:'';
+    const k=ck(me.id,ST.chatWith);const msgs=DB.msgs(k);const msgsEl=document.getElementById('chat-msgs');
+    msgsEl.innerHTML=msgs.length?msgs.map(m=>`
+      <div style="display:flex;flex-direction:column;align-items:${m.from===me.id?'flex-end':'flex-start'}">
+        <div class="msg ${m.from===me.id?'msg-mine':'msg-other'}">${m.text}</div>
+        <div class="msg-time">${ago(m.at)}</div>
+      </div>`).join(''):`<div class="chat-empty"><p>${partner?partner.username+'에게<br/>첫 메시지를 보내세요!':'팀원을 선택하세요'}</p></div>`;
+    msgsEl.scrollTop=msgsEl.scrollHeight;
+  }
+}
+function sendMsg(){
+  const me=DB.me();if(!me||!ST.chatWith)return;
+  const inp=document.getElementById('chat-inp');const txt=inp.value.trim();if(!txt)return;
+  const k=ck(me.id,ST.chatWith);DB.addMsg(k,{id:uid(),from:me.id,text:txt,at:new Date().toISOString()});
+  inp.value='';renderChatLayout();
+}
+
+// MODALS
+function openModal(userId){
+  const me=DB.me();if(!me){go('login');return;}
+  const u=DB.users().find(u=>u.id===userId);if(!u)return;
+  ST.toUid=userId;document.getElementById('req-mtitle').textContent=`// ${u.username}에게 팀원 요청`;
+  document.getElementById('req-msg').value='';document.getElementById('req-modal').classList.remove('hidden');
+}
+function closeAllModals(){document.querySelectorAll('.mov').forEach(m=>m.classList.add('hidden'));ST.toUid=null;}
+function confirmReq(){
+  const me=DB.me();const toId=ST.toUid;if(!me||!toId)return;
+  const rs=DB.reqs();if(rs.find(r=>r.from===me.id&&r.to===toId&&r.status==='pending')){toast('이미 요청을 보냈습니다.','err');closeAllModals();return;}
+  rs.push({id:uid(),from:me.id,to:toId,msg:document.getElementById('req-msg').value.trim(),status:'pending',at:new Date().toISOString()});
+  DB.saveR(rs);closeAllModals();toast('팀원 요청을 보냈습니다!','ok');
+  if(document.getElementById('v-dashboard').classList.contains('active'))renderCards();
+  if(ST.viewUid===toId)renderDetail(toId);
+}
+
+// PROJECT MODAL
+function openProjModal(){
+  const me=DB.me();if(!me){go('login');return;}
+  document.getElementById('pm-title').value='';document.getElementById('pm-desc').value='';
+  document.getElementById('pm-genres').innerHTML=GENRES.map(g=>`<div class="chk-opt" onclick="toggleChk(this)">${g}</div>`).join('');
+  document.querySelectorAll('#proj-modal .chk-opt[data-pos]').forEach(e=>e.classList.remove('sel'));
+  document.getElementById('proj-modal').classList.remove('hidden');
+}
+function toggleChk(el){el.classList.toggle('sel');}
+function saveProjModal(){
+  const me=DB.me();if(!me)return;
+  const title=document.getElementById('pm-title').value.trim();if(!title){toast('제목을 입력해주세요.','err');return;}
+  const genres=[...document.querySelectorAll('#pm-genres .chk-opt.sel')].map(e=>e.textContent);
+  const positions=[...document.querySelectorAll('#proj-modal .chk-opt[data-pos].sel')].map(e=>e.dataset.pos);
+  const p={id:uid(),authorId:me.id,title,desc:document.getElementById('pm-desc').value.trim(),genres,positions,status:'recruiting',at:new Date().toISOString()};
+  const projs=DB.projects();projs.unshift(p);DB.saveProj(projs);
+  DB.addFeed('project',me.id,{title});closeAllModals();toast('프로젝트가 등록되었습니다!','ok');renderProjects();
+}
+
+// JAM MODAL
+function openJamModal(){const me=DB.me();if(!me){go('login');return;}['jm-title','jm-theme','jm-start','jm-end','jm-url','jm-desc'].forEach(id=>document.getElementById(id).value='');document.getElementById('jam-modal').classList.remove('hidden');}
+function saveJamModal(){
+  const me=DB.me();if(!me)return;
+  const title=document.getElementById('jm-title').value.trim();if(!title){toast('이름을 입력해주세요.','err');return;}
+  const j={id:uid(),authorId:me.id,title,theme:document.getElementById('jm-theme').value.trim(),startDate:document.getElementById('jm-start').value,endDate:document.getElementById('jm-end').value,url:document.getElementById('jm-url').value.trim(),desc:document.getElementById('jm-desc').value.trim(),at:new Date().toISOString()};
+  const jams=DB.jams();jams.unshift(j);DB.saveJams(jams);
+  DB.addFeed('jam',me.id,{title});closeAllModals();toast('게임잼이 등록되었습니다!','ok');renderJams();
+}
+
+// DEMO DATA
+function initDemo(){
+  if(DB.users().length)return;
+  const mkU=(n,e,pos,sk,bio,genres,lookingFor,contact,portfolio,daysAgo)=>({
+    id:uid(),username:n,email:e,password:'demo123',position:pos,
+    skills:sk,bio,portfolio,lookingFor,contact,genres,bookmarks:[],
+    createdAt:new Date(Date.now()-864e5*daysAgo).toISOString()
+  });
+  const us=[
+    mkU('김진훈','jinhoon@demo.com','dev',['Unity','C#','Multiplayer','Shader'],'5년차 Unity 개발자입니다. 인디게임 2편을 출시한 경험이 있어요!','https://github.com',['art','sound'],'Discord: jinhoon#1234',['RPG','액션'],3),
+    mkU('박소연','soyeon@demo.com','art',['픽셀아트','캐릭터디자인','Aseprite','UI디자인'],'픽셀아트 전문 아티스트예요. 다양한 스타일로 작업 가능해요!','https://twitter.com',['dev','plan'],'Discord: soyeon#5678',['플랫포머','인디'],5),
+    mkU('최민석','minseok@demo.com','dev',['Godot','GDScript','Python','WebGL'],'Godot 엔진 전문입니다. 웹 기반 게임과 2D 플랫포머에 강합니다.','',['art','plan','sound'],'',['퍼즐','아케이드'],2),
+    mkU('이다현','dahyun@demo.com','plan',['레벨디자인','게임기획','UX','나러티브'],'게임 기획자 3년차입니다. 스토리텔링과 레벨 디자인을 좋아해요.','https://notion.so',['dev','art'],'Discord: dahyun#9012',['호러','어드벤처'],7),
+    mkU('정우진','woojin@demo.com','sound',['BGM작곡','SFX','FMOD','Wwise'],'게임 음악 작곡가입니다. 8비트부터 오케스트라까지 다양한 스타일로 작업해요!','https://soundcloud.com',['dev','art','plan'],'',['RPG','전략'],1),
+    mkU('한나은','naeun@demo.com','art',['3D모델링','Blender','VFX','애니메이션'],'3D 아티스트입니다. 캐릭터와 환경 아트를 주로 합니다.','https://artstation.com',['dev','sound'],'Discord: naeun#3456',['액션','슈팅'],4),
+    mkU('신도현','dohyun@demo.com','plan',['밸런싱','제작관리','스토리기획','Jira'],'게임 PD 경력 4년차입니다. 팀 매니지먼트와 게임 밸런스를 담당해왔어요.','',['dev','art','sound'],'Discord: dohyun#7890',['시뮬레이션','전략'],6),
+    mkU('윤태양','taeyang@demo.com','sound',['전자음악','믹싱마스터링','Ableton','보이스디렉팅'],'일렉트로닉 뮤직 프로듀서 겸 사운드 디자이너입니다.','https://youtube.com',['dev'],'',['인디','호러'],8)
+  ];
+  DB.saveU(us);
+  // projects
+  const projs=[
+    {id:uid(),authorId:us[0].id,title:'픽셀 RPG — 라스트 던전',desc:'2D 픽셀 RPG 인디게임입니다. 던전 탐험과 몬스터 수집이 핵심입니다. 열정 있는 팀원을 찾아요!',genres:['RPG','인디'],positions:['art','sound'],status:'recruiting',at:new Date(Date.now()-864e5*2).toISOString()},
+    {id:uid(),authorId:us[3].id,title:'호러 생존 게임 — 나이트폴',desc:'1인칭 호러 생존 게임입니다. Unreal Engine 5 기반으로 제작 중이에요. 개발자와 사운드 디자이너 구합니다!',genres:['호러'],positions:['dev','sound'],status:'recruiting',at:new Date(Date.now()-864e5*4).toISOString()},
+    {id:uid(),authorId:us[2].id,title:'퍼즐 게임 — 퀀텀 박스',desc:'물리 기반 퍼즐 게임입니다. Godot 4로 개발 중이고 아티스트를 찾고 있어요!',genres:['퍼즐'],positions:['art'],status:'recruiting',at:new Date(Date.now()-864e5*6).toISOString()}
+  ];
+  DB.saveProj(projs);
+  // jams
+  const jams=[
+    {id:uid(),authorId:us[4].id,title:'GMTK Game Jam 2026',theme:'역할 반전',startDate:'2026-04-10',endDate:'2026-04-12',url:'https://itch.io',desc:'48시간 게임잼입니다. 주제는 역할 반전! 팀원 구합니다.',at:new Date(Date.now()-864e5*1).toISOString()},
+    {id:uid(),authorId:us[6].id,title:'Ludum Dare 57',theme:'심해',startDate:'2026-04-18',endDate:'2026-04-21',url:'https://ldjam.com',desc:'72시간 Ludum Dare! 테마는 심해입니다. 혼자도 참가 가능합니다.',at:new Date(Date.now()-864e5*3).toISOString()}
+  ];
+  DB.saveJams(jams);
+  // feed
+  us.forEach(u=>DB.addFeed('join',u.id,{}));
+  projs.forEach(p=>DB.addFeed('project',p.authorId,{title:p.title}));
+  jams.forEach(j=>DB.addFeed('jam',j.authorId,{title:j.title}));
+}
+
+// INIT
+initDemo();
+document.querySelectorAll('.mov').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeAllModals();}));
+document.getElementById('li-p').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+go(DB.me()?'dashboard':'landing');
+</script>
+</body>
+</html>
