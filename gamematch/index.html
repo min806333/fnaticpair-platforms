@@ -509,6 +509,16 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 </div></div>
 
 <script>
+/* ── 보안 유틸 ── */
+function sanitize(str){
+  if(str==null)return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+async function hashPw(pw){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+/* ── 상수/유틸 ── */
 const GENRES=['RPG','플랫포머','퍼즐','호러','어드벤처','슈팅','시뮬레이션','전략','인디','액션'];
 const PL={dev:'개발자/프로그래머',art:'아티스트/디자이너',plan:'기획자/PD',sound:'사운드 디자이너'};
 const PI={dev:'💻',art:'🎨',plan:'📋',sound:'🎵'};
@@ -583,19 +593,21 @@ function selPos(pos,ctx){
   document.querySelectorAll('#'+pfx+'-psel .popt').forEach(e=>e.classList.toggle('sel',e.dataset.pos===pos));
   if(ctx==='p')ST.pPos=pos;else ST.rgPos=pos;
 }
-function doLogin(){
+async function doLogin(){
   const e=document.getElementById('li-e').value.trim(),p=document.getElementById('li-p').value,err=document.getElementById('li-err');
   err.classList.add('hidden');
-  const u=DB.users().find(u=>u.email===e&&u.password===p);
+  const h=await hashPw(p);
+  const u=DB.users().find(u=>u.email===e&&u.password===h);
   if(!u){err.textContent='이메일 또는 비밀번호가 올바르지 않습니다.';err.classList.remove('hidden');return;}
   DB.setSid(u.id);toast('로그인되었습니다!','ok');go('dashboard');
 }
-function doRegister(){
+async function doRegister(){
   const n=document.getElementById('rg-n').value.trim(),e=document.getElementById('rg-e').value.trim(),p=document.getElementById('rg-p').value,pos=document.getElementById('rg-pos').value,sk=document.getElementById('rg-sk').value,bio=document.getElementById('rg-bio').value.trim(),err=document.getElementById('rg-err');
   err.classList.add('hidden');
   if(!n){showE(err,'닉네임을 입력해주세요.');return;}if(!e){showE(err,'이메일을 입력해주세요.');return;}if(p.length<6){showE(err,'비밀번호는 6자 이상이어야 합니다.');return;}if(!pos){showE(err,'포지션을 선택해주세요.');return;}
   const users=DB.users();if(users.find(u=>u.email===e)){showE(err,'이미 사용 중인 이메일입니다.');return;}
-  const nu={id:uid(),username:n,email:e,password:p,position:pos,skills:sk?sk.split(',').map(s=>s.trim()).filter(Boolean):[],bio,portfolio:'',lookingFor:[],contact:'',genres:[],bookmarks:[],createdAt:new Date().toISOString()};
+  const h=await hashPw(p);
+  const nu={id:uid(),username:n,email:e,password:h,position:pos,skills:sk?sk.split(',').map(s=>s.trim()).filter(Boolean):[],bio,portfolio:'',lookingFor:[],contact:'',genres:[],bookmarks:[],createdAt:new Date().toISOString()};
   users.push(nu);DB.saveU(users);DB.setSid(nu.id);DB.addFeed('join',nu.id,{});
   toast('회원가입 완료! 환영합니다 🎮','ok');go('myprofile');
 }
@@ -613,9 +625,9 @@ function renderRec(){
   if(!recs.length){document.getElementById('rec-sec').classList.add('hidden');return;}
   document.getElementById('rec-sec').classList.remove('hidden');
   document.getElementById('rec-row').innerHTML=recs.map(u=>`
-    <div class="rec-chip" data-pos="${u.position}" onclick="viewUser('${u.id}')">
-      <div class="cav" data-pos="${u.position}" style="width:38px;height:38px;font-size:.8rem">${init(u.username)}</div>
-      <div><div class="cuname" style="font-size:.85rem">${u.username}</div><div class="pbadge" data-pos="${u.position}" style="font-size:.6rem">${PI[u.position]} ${PL[u.position]}</div></div>
+    <div class="rec-chip" data-pos="${sanitize(u.position)}" onclick="viewUser('${sanitize(u.id)}')">
+      <div class="cav" data-pos="${sanitize(u.position)}" style="width:38px;height:38px;font-size:.8rem">${init(sanitize(u.username))}</div>
+      <div><div class="cuname" style="font-size:.85rem">${sanitize(u.username)}</div><div class="pbadge" data-pos="${sanitize(u.position)}" style="font-size:.6rem">${PI[u.position]} ${sanitize(PL[u.position])}</div></div>
     </div>`).join('');
 }
 function renderCards(){
@@ -633,18 +645,18 @@ function renderUserCard(u,me,rs,isTeammate){
   let act=!me?`<button class="btn btn-sm btn-gh" onclick="go('login')">로그인 필요</button>`
     :conn?`<span class="conn-b">✓ 연결됨</span>`
     :pend?`<span class="pend-b">⏳ 요청 중</span>`
-    :`<button class="btn btn-sm btn-cy" onclick="openModal('${u.id}')">팀원 요청</button>`;
-  const chatBtn=me&&conn?`<button class="btn btn-sm btn-gh" onclick="openChat('${u.id}')">💬 채팅</button>`:'';
-  const tags=(u.skills||[]).slice(0,4).map(s=>`<span class="stag">${s}</span>`).join('');
-  const bm=me&&me.id!==u.id?`<button class="bm-btn" onclick="event.stopPropagation();toggleBm('${u.id}')" title="북마크">${isBm?'★':'☆'}</button>`:'';
-  const genreHtml=(u.genres||[]).slice(0,2).map(g=>`<span class="genre-chip" style="color:var(--pu);border-color:rgba(191,95,255,.4)">${g}</span>`).join('');
-  return `<div class="ucard" data-pos="${u.position}">
-    <div class="ctop"><div class="ctop-left"><div class="cav" data-pos="${u.position}">${init(u.username)}</div>
-      <div><div class="cuname">${u.username}</div><span class="pbadge" data-pos="${u.position}">${PI[u.position]} ${PL[u.position]}</span>${genreHtml}${ls?`<div class="lastseen">🕐 ${ls} 접속</div>`:''}</div>
+    :`<button class="btn btn-sm btn-cy" onclick="openModal('${sanitize(u.id)}')">팀원 요청</button>`;
+  const chatBtn=me&&conn?`<button class="btn btn-sm btn-gh" onclick="openChat('${sanitize(u.id)}')">💬 채팅</button>`:'';
+  const tags=(u.skills||[]).slice(0,4).map(s=>`<span class="stag">${sanitize(s)}</span>`).join('');
+  const bm=me&&me.id!==u.id?`<button class="bm-btn" onclick="event.stopPropagation();toggleBm('${sanitize(u.id)}')" title="북마크">${isBm?'★':'☆'}</button>`:'';
+  const genreHtml=(u.genres||[]).slice(0,2).map(g=>`<span class="genre-chip" style="color:var(--pu);border-color:rgba(191,95,255,.4)">${sanitize(g)}</span>`).join('');
+  return `<div class="ucard" data-pos="${sanitize(u.position)}">
+    <div class="ctop"><div class="ctop-left"><div class="cav" data-pos="${sanitize(u.position)}">${init(sanitize(u.username))}</div>
+      <div><div class="cuname">${sanitize(u.username)}</div><span class="pbadge" data-pos="${sanitize(u.position)}">${PI[u.position]} ${sanitize(PL[u.position])}</span>${genreHtml}${ls?`<div class="lastseen">🕐 ${ls} 접속</div>`:''}</div>
     </div>${bm}</div>
-    ${u.bio?`<div class="cbio">${u.bio}</div>`:''}
+    ${u.bio?`<div class="cbio">${sanitize(u.bio)}</div>`:''}
     <div class="cskills">${tags}</div>
-    <div class="cacts">${act}${chatBtn}<button class="btn btn-sm btn-gh" onclick="viewUser('${u.id}')">프로필 보기</button></div>
+    <div class="cacts">${act}${chatBtn}<button class="btn btn-sm btn-gh" onclick="viewUser('${sanitize(u.id)}')">프로필 보기</button></div>
   </div>`;
 }
 
@@ -905,10 +917,11 @@ function saveJamModal(){
 }
 
 // DEMO DATA
-function initDemo(){
+async function initDemo(){
   if(DB.users().length)return;
-  const mkU=(n,e,pos,sk,bio,genres,lookingFor,contact,portfolio,daysAgo)=>({
-    id:uid(),username:n,email:e,password:'demo123',position:pos,
+  const demoHash=await hashPw('demo123');
+  const mkU=(n,e,pos,sk,bio,portfolio,lookingFor,contact,genres,daysAgo)=>({
+    id:uid(),username:n,email:e,password:demoHash,position:pos,
     skills:sk,bio,portfolio,lookingFor,contact,genres,bookmarks:[],
     createdAt:new Date(Date.now()-864e5*daysAgo).toISOString()
   });
@@ -943,10 +956,9 @@ function initDemo(){
 }
 
 // INIT
-initDemo();
+initDemo().then(()=>{go(DB.me()?'dashboard':'landing');});
 document.querySelectorAll('.mov').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeAllModals();}));
 document.getElementById('li-p').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-go(DB.me()?'dashboard':'landing');
 </script>
 </body>
 </html>

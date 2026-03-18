@@ -399,6 +399,16 @@ pre code{color:var(--gn);font-family:'JetBrains Mono',monospace;font-size:.82rem
 </div></div></div>
 </div><!-- #app -->
 <script>
+/* ── 보안 유틸 ── */
+function sanitize(str){
+  if(str==null)return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+async function hashPw(pw){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+/* ── 상수/유틸 ── */
 const CATS={render:{label:'렌더링/그래픽',icon:'🖥️',color:'#ce93d8'},physics:{label:'물리 엔진',icon:'⚙️',color:'#00e676'},ai:{label:'AI/네비게이션',icon:'🧠',color:'#00bcd4'},audio:{label:'오디오',icon:'🔊',color:'#ffd600'},network:{label:'네트워킹',icon:'🌐',color:'#ff8a65'},ui:{label:'UI 프레임워크',icon:'🖼️',color:'#f48fb1'},util:{label:'유틸리티',icon:'🔧',color:'#80cbc4'}};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
 const genKey=()=>'GDEV-'+Array(3).fill(0).map(()=>Math.random().toString(36).slice(2,6).toUpperCase()).join('-');
@@ -451,14 +461,14 @@ function openTool(id){ST.viewTool=id;ST.detailTab='overview';go('detail');}
 function toolCard(t){
   const cat=CATS[t.category]||CATS.util;
   const lb=t.license==='free'?'<span class="badge b-free">무료</span>':t.license==='subscription'?'<span class="badge b-sub">구독</span>':'<span class="badge b-paid">유료</span>';
-  const engs=(t.engines||[]).slice(0,3).map(e=>`<span class="eng-tag">${e}</span>`).join('');
-  return `<div class="tcard" style="--cat-c:${cat.color}" onclick="openTool('${t.id}')">
-    <div class="tcard-top"><span class="badge b-cat" style="background:${cat.color}22;color:${cat.color};border:1px solid ${cat.color}44">${cat.icon} ${cat.label}</span>${lb}</div>
-    <div class="tcard-title">${t.title}</div>
-    <div class="tcard-author">by <span>${t.authorName||'개발자'}</span></div>
-    <div class="tcard-desc">${t.desc||''}</div>
+  const engs=(t.engines||[]).slice(0,3).map(e=>`<span class="eng-tag">${sanitize(e)}</span>`).join('');
+  return `<div class="tcard" style="--cat-c:${cat.color}" onclick="openTool('${sanitize(t.id)}')">
+    <div class="tcard-top"><span class="badge b-cat" style="background:${cat.color}22;color:${cat.color};border:1px solid ${cat.color}44">${cat.icon} ${sanitize(cat.label)}</span>${lb}</div>
+    <div class="tcard-title">${sanitize(t.title)}</div>
+    <div class="tcard-author">by <span>${sanitize(t.authorName||'개발자')}</span></div>
+    <div class="tcard-desc">${sanitize(t.desc||'')}</div>
     <div class="eng-tags">${engs}</div>
-    <div class="tcard-footer"><span class="tcard-ver">v${t.latestVersion}</span><span class="tcard-dl">↓ ${(t.downloads||0).toLocaleString()}</span></div>
+    <div class="tcard-footer"><span class="tcard-ver">v${sanitize(t.latestVersion)}</span><span class="tcard-dl">↓ ${(t.downloads||0).toLocaleString()}</span></div>
   </div>`;
 }
 
@@ -719,29 +729,32 @@ function renderMyContent(){
 }
 
 /* ---- AUTH ---- */
-function doLogin(){
+async function doLogin(){
   const e=document.getElementById('li-e').value.trim(),p=document.getElementById('li-p').value,err=document.getElementById('li-err');
   err.classList.add('hidden');
-  const u=DB.users().find(u=>u.email===e&&u.password===p);
+  const h=await hashPw(p);
+  const u=DB.users().find(u=>u.email===e&&u.password===h);
   if(!u){err.textContent='이메일 또는 비밀번호가 올바르지 않습니다.';err.classList.remove('hidden');return;}
   DB.setSid(u.id);updateNav();toast('로그인되었습니다!','ok');go('tools');
 }
-function doRegister(){
+async function doRegister(){
   const n=document.getElementById('rg-n').value.trim(),e=document.getElementById('rg-e').value.trim(),p=document.getElementById('rg-p').value,err=document.getElementById('rg-err');
   err.classList.add('hidden');
   if(!n){err.textContent='닉네임을 입력해주세요.';err.classList.remove('hidden');return;}
   if(!e){err.textContent='이메일을 입력해주세요.';err.classList.remove('hidden');return;}
   if(p.length<6){err.textContent='비밀번호는 6자 이상이어야 합니다.';err.classList.remove('hidden');return;}
   const users=DB.users();if(users.find(u=>u.email===e)){err.textContent='이미 사용 중인 이메일입니다.';err.classList.remove('hidden');return;}
-  const nu={id:uid(),username:n,email:e,password:p,bio:'',createdAt:new Date().toISOString()};
+  const h=await hashPw(p);
+  const nu={id:uid(),username:n,email:e,password:h,bio:'',createdAt:new Date().toISOString()};
   users.push(nu);DB.saveU(users);DB.setSid(nu.id);updateNav();toast('환영합니다!','ok');go('tools');
 }
 function doLogout(){DB.clearSid();updateNav();toast('로그아웃되었습니다.','info');go('home');}
 
 /* ---- DEMO DATA ---- */
-function initDemo(){
+async function initDemo(){
   if(DB.tools().length)return;
-  const mkU=(n,e)=>({id:uid(),username:n,email:e,password:'demo123',bio:'',createdAt:new Date(Date.now()-864e5*30).toISOString()});
+  const demoHash=await hashPw('demo123');
+  const mkU=(n,e)=>({id:uid(),username:n,email:e,password:demoHash,bio:'',createdAt:new Date(Date.now()-864e5*30).toISOString()});
   const users=[mkU('Kim DevMaster','kim@demo.com'),mkU('Park SDK','park@demo.com'),mkU('Choi Engine','choi@demo.com')];
   DB.saveU(users);
   const docs=(title,install,lang,usage)=>`<h4>// 설치</h4><p>${title}을(를) 프로젝트에 추가하는 방법입니다.</p><pre><code>${install}</code></pre><h4>// 기본 사용법</h4><p>설치 후 다음과 같이 사용하세요.</p><pre><code>${usage}</code></pre>`;
@@ -773,9 +786,8 @@ function initDemo(){
 }
 
 // INIT
-initDemo();
+initDemo().then(()=>{go(DB.me()?'tools':'home');});
 document.getElementById('li-p').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-go(DB.me()?'tools':'home');
 </script>
 </body>
 </html>

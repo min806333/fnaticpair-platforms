@@ -326,6 +326,17 @@ textarea.form-input{resize:vertical;min-height:100px}
 
 <script>
 // ============================================================
+// 보안 유틸
+// ============================================================
+function sanitize(str){
+  if(str==null)return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+async function hashPw(pw){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+// ============================================================
 // UTILS
 // ============================================================
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
@@ -404,13 +415,14 @@ const ST={
 // ============================================================
 // DEMO DATA
 // ============================================================
-function initDemo(){
+async function initDemo(){
   if(localStorage.getItem('ia_init'))return;
-  const u1={id:'u1',username:'픽셀마스터',email:'kim@demo.com',password:'demo123',bio:'픽셀아트 전문 에셋 크리에이터',createdAt:'2024-01-10T09:00:00.000Z'};
-  const u2={id:'u2',username:'사운드팩토리',email:'park@demo.com',password:'demo123',bio:'게임 음악과 효과음 전문가',createdAt:'2024-01-12T10:00:00.000Z'};
-  const u3={id:'u3',username:'UnityWizard',email:'choi@demo.com',password:'demo123',bio:'Unity 전문 개발자',createdAt:'2024-01-15T11:00:00.000Z'};
-  const u4={id:'u4',username:'3DForge',email:'lee@demo.com',password:'demo123',bio:'로우폴리 3D 모델 전문 아티스트',createdAt:'2024-01-18T12:00:00.000Z'};
-  const u5={id:'u5',username:'UIKitchen',email:'yoon@demo.com',password:'demo123',bio:'게임 UI/UX 디자이너',createdAt:'2024-01-20T13:00:00.000Z'};
+  const demoHash=await hashPw('demo123');
+  const u1={id:'u1',username:'픽셀마스터',email:'kim@demo.com',password:demoHash,bio:'픽셀아트 전문 에셋 크리에이터',createdAt:'2024-01-10T09:00:00.000Z'};
+  const u2={id:'u2',username:'사운드팩토리',email:'park@demo.com',password:demoHash,bio:'게임 음악과 효과음 전문가',createdAt:'2024-01-12T10:00:00.000Z'};
+  const u3={id:'u3',username:'UnityWizard',email:'choi@demo.com',password:demoHash,bio:'Unity 전문 개발자',createdAt:'2024-01-15T11:00:00.000Z'};
+  const u4={id:'u4',username:'3DForge',email:'lee@demo.com',password:demoHash,bio:'로우폴리 3D 모델 전문 아티스트',createdAt:'2024-01-18T12:00:00.000Z'};
+  const u5={id:'u5',username:'UIKitchen',email:'yoon@demo.com',password:demoHash,bio:'게임 UI/UX 디자이너',createdAt:'2024-01-20T13:00:00.000Z'};
   DB.saveU([u1,u2,u3,u4,u5]);
 
   const assets=[
@@ -513,17 +525,17 @@ function assetCardHTML(a){
   const rating=DB.assetRating(a.id);
   const ratingStr=rating?`<span style="color:var(--am);font-size:12px">★${rating.toFixed(1)}</span>`:'';
   return `
-    <div class="asset-card" onclick="openAsset('${a.id}')">
+    <div class="asset-card" onclick="openAsset('${sanitize(a.id)}')">
       <div class="asset-prev" style="background:${cat.grad}">
         <span>${a.emoji||cat.icon}</span>
       </div>
       <div class="asset-body">
         <div class="asset-badges">
-          <span class="badge badge-cat">${cat.icon} ${cat.label}</span>
+          <span class="badge badge-cat">${cat.icon} ${sanitize(cat.label)}</span>
           ${a.price===0?'<span class="badge badge-free">FREE</span>':''}
         </div>
-        <div class="asset-title">${a.title}</div>
-        <div class="asset-author" onclick="event.stopPropagation();openProfile('${a.authorId}')">by ${a.authorName}</div>
+        <div class="asset-title">${sanitize(a.title)}</div>
+        <div class="asset-author" onclick="event.stopPropagation();openProfile('${sanitize(a.authorId)}')">by ${sanitize(a.authorName)}</div>
         <div class="asset-foot">
           <span class="asset-price ${a.price===0?'free':''}">${fmt(a.price)}</span>
           <div class="asset-meta">
@@ -1172,19 +1184,20 @@ function renderProfile(userId){
 // ============================================================
 // AUTH ACTIONS
 // ============================================================
-function doLogin(){
+async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
   const pw=document.getElementById('login-pw').value;
   const err=document.getElementById('login-err');
   if(!email||!pw){err.style.display='block';err.textContent='이메일과 비밀번호를 입력해주세요';return;}
-  const u=DB.users().find(x=>x.email===email&&x.password===pw);
+  const h=await hashPw(pw);
+  const u=DB.users().find(x=>x.email===email&&x.password===h);
   if(!u){err.style.display='block';err.textContent='이메일 또는 비밀번호가 올바르지 않습니다';return;}
   DB.setSid(u.id);
-  toast(`${u.username}님, 환영합니다!`,'success');
+  toast(`${sanitize(u.username)}님, 환영합니다!`,'success');
   go('home');
 }
 
-function doRegister(){
+async function doRegister(){
   const name=document.getElementById('reg-name').value.trim();
   const email=document.getElementById('reg-email').value.trim();
   const pw=document.getElementById('reg-pw').value;
@@ -1193,11 +1206,12 @@ function doRegister(){
   if(pw.length<6){err.style.display='block';err.textContent='비밀번호는 6자 이상이어야 합니다';return;}
   const users=DB.users();
   if(users.find(u=>u.email===email)){err.style.display='block';err.textContent='이미 사용 중인 이메일입니다';return;}
-  const newUser={id:uid(),username:name,email,password:pw,bio:'',createdAt:new Date().toISOString()};
+  const h=await hashPw(pw);
+  const newUser={id:uid(),username:name,email,password:h,bio:'',createdAt:new Date().toISOString()};
   users.push(newUser);
   DB.saveU(users);
   DB.setSid(newUser.id);
-  toast(`${name}님, 회원가입을 축하합니다!`,'success');
+  toast(`${sanitize(name)}님, 회원가입을 축하합니다!`,'success');
   go('home');
 }
 
@@ -1349,8 +1363,7 @@ function toast(msg,type='info'){
 // ============================================================
 // INIT
 // ============================================================
-initDemo();
-go('home');
+initDemo().then(()=>go('home'));
 </script>
 </body>
 </html>
