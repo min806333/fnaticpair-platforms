@@ -973,48 +973,54 @@
     async function handleSubmit(e) {
       e.preventDefault();
 
-      if (!contactForm) {
+      if (!contactForm) return;
+
+      // 봇 방지: honeypot 체크
+      const website = contactForm.querySelector('input[name="website"]');
+      if (website && website.value) return;
+
+      // 봇 방지: 너무 빨리 제출 (3초 미만)
+      const startedAt = parseInt(contactForm.querySelector('input[name="startedAt"]')?.value || '0', 10);
+      if (Date.now() - startedAt < 3000) {
+        setFormStatus('잠시 후 다시 시도해 주세요.', 'error');
         return;
       }
 
       const payload = Object.fromEntries(new FormData(contactForm).entries());
-      payload.name = payload.name ? payload.name.trim() : '';
-      payload.phone = payload.phone ? payload.phone.trim() : '';
-      payload.email = payload.email ? payload.email.trim() : '';
-      payload.category = payload.category ? payload.category.trim() : '';
-      payload.message = payload.message ? payload.message.trim() : '';
+      payload.name    = (payload.name    || '').trim();
+      payload.email   = (payload.email   || '').trim();
+      payload.category= (payload.category|| '').trim();
+      payload.message = (payload.message || '').trim();
 
-      if (!payload.name || !payload.phone || !payload.message) {
-        setFormStatus('필수 항목을 먼저 확인해 주세요.', 'error');
+      if (!payload.name || !payload.email || !payload.message) {
+        setFormStatus('이름, 이메일, 내용은 필수 항목입니다.', 'error');
         return;
       }
 
       setSubmitState(true);
-      setFormStatus('문의 내용을 안전하게 전송하는 중입니다.');
+      setFormStatus('전송 중입니다...');
 
       try {
-        const response = await fetch('/api/contact', {
+        // ★ Formspree 엔드포인트 — 아래 YOUR_FORM_ID 를 실제 ID로 교체하세요
+        const FORMSPREE_ID = 'YOUR_FORM_ID';
+        const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(contactForm)
         });
 
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(data.message || '문의 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+          throw new Error((data.errors || []).map(e => e.message).join(', ') || '전송에 실패했습니다.');
         }
 
-        setFormStatus(data.message || '문의가 접수되었습니다. 빠르게 확인 후 연락드릴게요.', 'success');
+        setFormStatus('문의가 접수되었습니다. 빠르게 확인 후 연락드릴게요!', 'success');
         contactForm.reset();
+        if (startedAtInput) startedAtInput.value = String(Date.now());
 
-        if (startedAtInput) {
-          startedAtInput.value = String(Date.now());
-        }
       } catch (error) {
-        setFormStatus(error.message || '문의 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.', 'error');
+        setFormStatus(error.message || '전송에 실패했습니다. 잠시 후 다시 시도해 주세요.', 'error');
       } finally {
         setSubmitState(false);
       }
