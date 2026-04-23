@@ -933,16 +933,66 @@
   </section>
 
   <!-- PORTFOLIO -->
-  <section id="portfolio" style="background:var(--bg)">
+  <section id="portfolio" style="background:var(--bg); padding-bottom:4rem;">
     <div class="section-header reveal">
       <p class="section-pre">portfolio</p>
       <h2 class="section-title" style="color:var(--green)">포트폴리오</h2>
       <p class="section-desc">개발 작업물과 프로젝트를 기록합니다.</p>
     </div>
-    <div class="empty-state reveal">
-      <div class="empty-icon">📁</div>
-      <div class="empty-title" style="color:var(--green)">WORK IN PROGRESS</div>
-      <p>작업물이 곧 추가됩니다.<br/>업데이트를 기다려 주세요.</p>
+    <div class="games-grid">
+
+      <!-- 자모 퍼즐 -->
+      <div class="game-card reveal" style="border-color:rgba(0,230,118,0.3)">
+        <img class="game-banner" src="games/jamo-puzzle/banner.jpg" alt="자모 퍼즐 배너" loading="lazy" />
+        <div class="game-body">
+          <div class="game-meta">
+            <img class="game-icon" src="games/jamo-puzzle/icon.png" alt="자모 퍼즐 아이콘" loading="lazy" />
+            <div>
+              <div class="game-title">자모 퍼즐</div>
+              <div class="game-engine">Expo · React Native · Android</div>
+            </div>
+            <span class="game-version">v1.0.0.4</span>
+          </div>
+          <p class="game-desc">한글 자모를 조합해 단어를 완성하는 모바일 퍼즐 게임. 다양한 카테고리와 업적 시스템이 포함되어 있습니다.</p>
+          <div class="game-tags">
+            <span class="game-tag">React Native</span>
+            <span class="game-tag">Expo</span>
+            <span class="game-tag">TypeScript</span>
+            <span class="game-tag">Android</span>
+            <span class="game-tag">퍼즐</span>
+          </div>
+          <div class="game-links">
+            <a class="game-btn game-btn-gp" href="https://play.google.com/store/apps/details?id=com.lllmmm111222.jamopuzzle" target="_blank" rel="noopener noreferrer">▶ Google Play</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Battle 2048 -->
+      <div class="game-card reveal" style="border-color:rgba(0,230,118,0.3)">
+        <img class="game-banner" src="games/2048/banner.jpg" alt="Daily Battle 2048 배너" loading="lazy" />
+        <div class="game-body">
+          <div class="game-meta">
+            <img class="game-icon" src="games/2048/icon.png" alt="Daily Battle 2048 아이콘" loading="lazy" />
+            <div>
+              <div class="game-title">Daily Battle 2048</div>
+              <div class="game-engine">Flutter · Dart · Android</div>
+            </div>
+            <span class="game-version">v1.5.4</span>
+          </div>
+          <p class="game-desc">매일 동일한 시드로 진행되는 경쟁형 2048 퍼즐. 리더보드, 미션, 연속 출석, 인앱 결제, 테마 시스템을 구현했습니다.</p>
+          <div class="game-tags">
+            <span class="game-tag">Flutter</span>
+            <span class="game-tag">Dart</span>
+            <span class="game-tag">Supabase</span>
+            <span class="game-tag">Riverpod</span>
+            <span class="game-tag">Android</span>
+          </div>
+          <div class="game-links">
+            <a class="game-btn game-btn-gp" href="https://play.google.com/store/apps/details?id=com.dailybattle.dailybattle2048" target="_blank" rel="noopener noreferrer">▶ Google Play</a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
