@@ -679,6 +679,84 @@
       .nav-links { display: none; }
     }
 
+    /* ── GAME CARDS ── */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2rem;
+      padding: 0 7% 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .game-card {
+      border: 2px solid var(--border);
+      background: var(--bg);
+      overflow: hidden;
+      transition: transform .2s, border-color .2s;
+      cursor: default;
+    }
+    .game-card:hover { transform: translateY(-4px); border-color: var(--cyan); }
+    .game-banner {
+      width: 100%;
+      aspect-ratio: 16/7;
+      object-fit: cover;
+      display: block;
+      background: #111;
+    }
+    .game-body { padding: 1.4rem 1.4rem 1.2rem; }
+    .game-meta { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; }
+    .game-icon {
+      width: 52px; height: 52px;
+      border: 2px solid var(--border);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .game-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.65rem;
+      color: var(--fg);
+      line-height: 1.6;
+    }
+    .game-engine {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+    .game-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 1.2rem;
+    }
+    .game-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.2rem; }
+    .game-tag {
+      font-size: 0.68rem;
+      padding: 0.2rem 0.55rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .game-links { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .game-btn {
+      font-size: 0.7rem;
+      padding: 0.5rem 1rem;
+      border: 2px solid;
+      text-decoration: none;
+      transition: background .15s, color .15s;
+      font-family: 'VT323', monospace;
+      letter-spacing: 1px;
+    }
+    .game-btn-gp { border-color: var(--cyan); color: var(--cyan); }
+    .game-btn-gp:hover { background: var(--cyan); color: var(--bg); }
+    .game-btn-os { border-color: var(--green); color: var(--green); }
+    .game-btn-os:hover { background: var(--green); color: var(--bg); }
+    .game-version {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-left: auto;
+      align-self: center;
+      opacity: 0.6;
+    }
+
     /* ── EMPTY STATE ── */
     .empty-state {
       border: 2px dashed var(--border);
@@ -792,16 +870,65 @@
   </section>
 
   <!-- GAMES -->
-  <section id="games" style="background:var(--bg2)">
+  <section id="games" style="background:var(--bg2); padding-bottom:4rem;">
     <div class="section-header reveal">
       <p class="section-pre">games</p>
       <h2 class="section-title" style="color:var(--cyan)">게임<br/>쇼케이스</h2>
       <p class="section-desc">직접 개발한 인디게임을 소개합니다.</p>
     </div>
-    <div class="empty-state reveal">
-      <div class="empty-icon">🎮</div>
-      <div class="empty-title">COMING SOON</div>
-      <p>첫 번째 게임을 준비 중입니다.<br/>조금만 기다려 주세요!</p>
+    <div class="games-grid">
+
+      <!-- 자모 퍼즐 -->
+      <div class="game-card reveal">
+        <img class="game-banner" src="games/jamo-puzzle/banner.jpg" alt="자모 퍼즐 배너" loading="lazy" />
+        <div class="game-body">
+          <div class="game-meta">
+            <img class="game-icon" src="games/jamo-puzzle/icon.png" alt="자모 퍼즐 아이콘" loading="lazy" />
+            <div>
+              <div class="game-title">자모 퍼즐</div>
+              <div class="game-engine">Expo (React Native) · Android</div>
+            </div>
+            <span class="game-version">v1.0.0.4</span>
+          </div>
+          <p class="game-desc">한글 자모를 조합해 단어를 완성하는 퍼즐 게임. 다양한 카테고리와 도전 과제가 포함되어 있습니다.</p>
+          <div class="game-tags">
+            <span class="game-tag">퍼즐</span>
+            <span class="game-tag">한글</span>
+            <span class="game-tag">모바일</span>
+            <span class="game-tag">Android</span>
+          </div>
+          <div class="game-links">
+            <a class="game-btn game-btn-gp" href="https://play.google.com/store/apps/details?id=com.lllmmm111222.jamopuzzle" target="_blank" rel="noopener noreferrer">▶ Google Play</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Battle 2048 -->
+      <div class="game-card reveal">
+        <img class="game-banner" src="games/2048/banner.jpg" alt="Daily Battle 2048 배너" loading="lazy" />
+        <div class="game-body">
+          <div class="game-meta">
+            <img class="game-icon" src="games/2048/icon.png" alt="Daily Battle 2048 아이콘" loading="lazy" />
+            <div>
+              <div class="game-title">Daily Battle 2048</div>
+              <div class="game-engine">Flutter · Android</div>
+            </div>
+            <span class="game-version">v1.5.4</span>
+          </div>
+          <p class="game-desc">매일 동일한 시드로 진행되는 2048 배틀 퍼즐. 리더보드, 미션, 연속 출석, 테마 등 다양한 콘텐츠를 포함합니다.</p>
+          <div class="game-tags">
+            <span class="game-tag">퍼즐</span>
+            <span class="game-tag">2048</span>
+            <span class="game-tag">데일리 배틀</span>
+            <span class="game-tag">리더보드</span>
+            <span class="game-tag">Android</span>
+          </div>
+          <div class="game-links">
+            <a class="game-btn game-btn-gp" href="https://play.google.com/store/apps/details?id=com.dailybattle.dailybattle2048" target="_blank" rel="noopener noreferrer">▶ Google Play</a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 

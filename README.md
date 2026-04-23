@@ -36,3 +36,18 @@ start devkit/index.html
 
 - **현재**: Vanilla HTML/CSS/JS + localStorage
 - **예정**: Next.js 14 + Supabase + 포트원 결제
+
+## Secure contact form
+
+The homepage contact form now sends submissions to `/api/contact` instead of exposing the destination email address in the browser.
+
+Set these Vercel environment variables before deploying:
+
+- `RESEND_API_KEY`: API key for Resend
+- `CONTACT_TO_EMAIL`: inbox that receives the inquiry, for example `lup53699@gmail.com`
+- `CONTACT_FROM_EMAIL`: verified sender address in Resend, for example `FnaticPair <noreply@fnaticpair.com>`
+
+Optional variables:
+
+- `CONTACT_SUBJECT_PREFIX`: custom email subject prefix
+- `CONTACT_ALLOWED_ORIGINS`: comma-separated allowlist for custom origins
